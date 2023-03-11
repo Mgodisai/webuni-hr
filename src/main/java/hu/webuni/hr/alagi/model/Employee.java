@@ -1,7 +1,6 @@
 package hu.webuni.hr.alagi.model;
 
 import java.time.LocalDateTime;
-import java.time.Period;
 
 public class Employee {
    private static Long lastId=0L;
@@ -68,17 +67,12 @@ public class Employee {
       this.startDate = startDate;
    }
 
-   public double getEmploymentYears() {
-      return Period.between(startDate.toLocalDate(), LocalDateTime.now().toLocalDate()).toTotalMonths()/12d;
-   }
-
    @Override
    public String toString() {
       return "Employee{" +
             "id=" + id +
             ", name='" + getFullName() + '\'' +
             ", currentMonthlySalary=" + monthlySalary +
-            ", years=" + getEmploymentYears() +
             '}';
    }
 }

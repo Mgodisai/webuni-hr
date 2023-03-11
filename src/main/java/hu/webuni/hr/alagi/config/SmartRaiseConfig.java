@@ -1,5 +1,7 @@
 package hu.webuni.hr.alagi.config;
 
+import hu.webuni.hr.alagi.service.ComplexDateService;
+import hu.webuni.hr.alagi.service.DateService;
 import hu.webuni.hr.alagi.service.EmployeeService;
 import hu.webuni.hr.alagi.service.SmartEmployeeService;
 import org.springframework.context.annotation.Bean;
@@ -12,5 +14,10 @@ public class SmartRaiseConfig {
    @Bean
    public EmployeeService employeeService() {
       return new SmartEmployeeService();
+   }
+
+   @Bean
+   public DateService dateService() {
+      return new ComplexDateService();
    }
 }

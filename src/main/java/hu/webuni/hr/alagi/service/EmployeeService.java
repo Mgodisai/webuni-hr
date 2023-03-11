@@ -4,5 +4,4 @@ import hu.webuni.hr.alagi.model.Employee;
 
 public interface EmployeeService {
    int getPayRaisePercent(Employee employee);
-
 }

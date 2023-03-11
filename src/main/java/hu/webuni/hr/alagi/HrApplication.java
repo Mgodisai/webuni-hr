@@ -1,6 +1,7 @@
 package hu.webuni.hr.alagi;
 
 import hu.webuni.hr.alagi.model.Employee;
+import hu.webuni.hr.alagi.service.DateService;
 import hu.webuni.hr.alagi.service.SalaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -15,7 +16,8 @@ public class HrApplication implements CommandLineRunner {
 
    @Autowired
    private SalaryService salaryService;
-
+   @Autowired
+   private DateService dateService;
    public static void main(String[] args) {
       SpringApplication.run(HrApplication.class, args);
    }
@@ -29,12 +31,20 @@ public class HrApplication implements CommandLineRunner {
       Employee employee5 = new Employee("Tamas", "Varga", 1000, LocalDateTime.of(2022, Month.JANUARY, 5, 8,0 ));
       Employee employee6 = new Employee("Tamas", "Varga", 1000, LocalDateTime.of(2011, Month.JANUARY, 5, 8,0 ));
 
-      System.out.println(employee1+", new salary: "+salaryService.getNewMonthlySalary(employee1));
-      System.out.println(employee2+", new salary: "+salaryService.getNewMonthlySalary(employee2));
-      System.out.println(employee3+", new salary: "+salaryService.getNewMonthlySalary(employee3));
-      System.out.println(employee4+", new salary: "+salaryService.getNewMonthlySalary(employee4));
-      System.out.println(employee5+", new salary: "+salaryService.getNewMonthlySalary(employee5));
-      System.out.println(employee6+", new salary: "+salaryService.getNewMonthlySalary(employee6));
+      printResult(employee1);
+      printResult(employee2);
+      printResult(employee3);
+      printResult(employee4);
+      printResult(employee5);
+      printResult(employee6);
+   }
 
+   private void printResult(Employee employee) {
+      String pattern = "%s; years: %.2f; new salary: %d\n";
+      System.out.printf(pattern,
+            employee,
+            dateService.calculateYearsBetweenDates(employee.getStartDate(), LocalDateTime.now()),
+            salaryService.getNewMonthlySalary(employee)
+      );
    }
 }
