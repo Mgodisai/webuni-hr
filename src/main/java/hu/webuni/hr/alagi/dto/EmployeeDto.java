@@ -1,9 +1,9 @@
-package hu.webuni.hr.alagi.model;
+package hu.webuni.hr.alagi.dto;
 
+import hu.webuni.hr.alagi.model.Position;
 import java.time.LocalDateTime;
 
-public class Employee {
-   private static Long lastId=0L;
+public class EmployeeDto {
    private Long id;
    private String firstName;
    private String lastName;
@@ -11,10 +11,8 @@ public class Employee {
    private int monthlySalary;
    private LocalDateTime startDate;
 
-
-
-   public Employee(String firstName, String lastName, Position position, int monthlySalary, LocalDateTime startDate) {
-      this.id = lastId++;
+   public EmployeeDto(Long id, String firstName, String lastName, Position position, int monthlySalary, LocalDateTime startDate) {
+      this.id = id;
       this.firstName = firstName;
       this.lastName = lastName;
       this.position = position;
@@ -22,19 +20,15 @@ public class Employee {
       this.startDate = startDate;
    }
 
-   public Employee() {
+   public EmployeeDto() {
    }
 
    public Long getId() {
       return id;
    }
 
-   public void setId() {
-      this.id = lastId++;
-   }
-
-   public String getFullName() {
-      return firstName+" "+lastName;
+   public void setId(Long id) {
+      this.id = id;
    }
 
    public String getFirstName() {
@@ -75,15 +69,5 @@ public class Employee {
 
    public void setStartDate(LocalDateTime startDate) {
       this.startDate = startDate;
-   }
-
-   @Override
-   public String toString() {
-      return "Employee{" +
-            "id=" + id +
-            ", position=" + position +
-            ", name='" + getFullName() + '\'' +
-            ", currentMonthlySalary=" + monthlySalary +
-            '}';
    }
 }

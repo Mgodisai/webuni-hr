@@ -1,6 +1,8 @@
 spring:
   profiles:
     active: smart
+  thymeleaf:
+    cache: false
 hr:
   raise:
     def:
