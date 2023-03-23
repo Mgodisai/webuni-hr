@@ -3,80 +3,55 @@
 <head>
     <title>HR App</title>
     <link rel="stylesheet" href="/webjars/bootstrap/5.2.3/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/webjars/font-awesome/6.1.0/css/all.min.css"/>
 </head>
 <body>
 <div class="container pt-2 col-md-12">
-    <div class="d-flex align-items-center">
-        <h2 class="p-2">Employees</h2>
-        <span class="badge bg-secondary" th:text="${employees.size()}"></span>
+    <div class="row">
+        <div class="col-md-4">
+            <h5>Employees</h5>
+            <span class="badge bg-secondary" th:text="${employees.size()}"></span>
+        </div>
+
+        <div th:fragment="message-panel" class="col-md-4">
+            <div th:if="${success!=null}" class="alert" role="alert" th:classappend="${success}==true ? 'alert-primary' : 'alert-danger'">
+                <span th:text="${message}"></span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <span class="float-end"><a th:href="@{/employees/new}">New employee<i class="fas fa-long-arrow-alt-right"></i></a></span>
+        </div>
     </div>
+
     <div class="row>">
         <table class="table table-bordered table-hover">
             <thead>
             <tr class="table-dark">
                 <th>Id</th>
-                <th>Firstname</th>
-                <th>Lastname</th>
+                <th>Name</th>
                 <th>Position</th>
                 <th>Monthly Salary</th>
-                <th>StartDate</th>
-                <th>Delete</th>
+                <th>Start Date</th>
+                <th>Action</th>
             </tr>
             </thead>
             <tbody>
             <tr th:classappend="${index.even} ? 'list-group-item-secondary' : ''" th:object="${employee}" th:each="employee, index : ${employees}">
-                <td th:text="*{id}"></td>
-                <td th:text="*{firstName}"></td>
-                <td th:text="*{lastName}"></td>
-                <td th:text="*{position}"></td>
-                <td th:text="*{monthlySalary}"></td>
+                <td th:text="${employee.id}">Id</td>
+                <td><a th:text="${employee.fullName}" th:href="@{/employees/edit/{id}(id=${employee.id})}"></a></td>
+                <td th:text="${employee.position}"></td>
+                <td th:text="${#numbers.formatInteger(employee.monthlySalary,0,'WHITESPACE')}"></td>
                 <td th:text="${#temporals.format(employee.startDate, 'yyyy-MM-dd HH:mm')}"></td>
                 <td>
-                    <a th:href="@{/employees/delete/{id}(id=*{id})}" class="text-danger">Delete</a>
+                    <a th:href="@{/employees/edit/{id}(id=*{id})}" class="text-primary"><i class="fas fa-pencil-alt"></i></a>
+                    <a th:href="@{/employees/delete/{id}(id=*{id})}" class="text-danger"><i class="fas fa-trash"></i></a>
                 </td>
             </tr>
             </tbody>
         </table>
     </div>
-    <form class="p-2" enctype="multipart/form-data" th:action="@{/employees}" method="post" th:object="${newEmployee}">
-        <div class="form-group row p-2">
-            <label for="firstName" class="col-sm-2 col-form-label">FirstName</label>
-            <div class="col-sm-4">
-                <input type="text" class="form-control" id="firstName" th:field="*{firstName}" placeholder="FirstName"/>
-            </div>
-        </div>
-        <div class="form-group row p-2">
-            <label for="lastName" class="col-sm-2 col-form-label">LastName</label>
-            <div class="col-sm-4">
-                <input type="text" class="form-control" id="lastName" th:field="*{lastName}" placeholder="LastName"/>
-            </div>
-        </div>
-        <div class="form-group row p-2">
-            <label for="position" class="col-sm-2 col-form-label">Position</label>
-            <div class="col-sm-4">
-                <select class="form-control" id="position" name="position" required>
-                    <option
-                            th:each="position : ${T(hu.webuni.hr.alagi.model.Position).values()}"
-                            th:value="${position}"
-                            th:text="${position}"
-                            th:selected="${newEmployee.position}==${position}"
-                    ></option>
-                </select>
-            </div>
-        </div>
-        <div class="form-group row p-2">
-            <label for="monthlySalary" class="col-sm-2 col-form-label">Monthly Salary</label>
-            <div class="col-sm-4">
-                <input type="text" class="form-control" id="monthlySalary" th:field="*{monthlySalary}" placeholder="Monthly Salary"/>
-            </div>
-        </div>
-        <button class="btn btn-secondary mt-4"  type="submit" name="add">Add new Employee</button>
-        <div th:if="${success!=null}" class="alert col-sm-6 mt-4" role="alert" th:classappend="${success} ? 'alert-success' : 'alert-danger'">
-            <span th:text="${message}"></span>
-        </div>
-    </form>
 </div>
-<script src="/webjars/bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/webjars/bootstrap/js/bootstrap.js}"></script>
 </body>
 </html>

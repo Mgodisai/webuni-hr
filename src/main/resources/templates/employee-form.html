@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="hu" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>HR App</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.2.3/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/webjars/font-awesome/6.1.0/css/all.min.css"/>
+</head>
+<body>
+<div class="container pt-2 col-md-12">
+    <div class="row">
+        <div class="col-md-4">
+            <h5>Employee form</h5>
+            <span class="badge bg-secondary" th:text="${action} == 'new' ? 'New employee' :'Update employee' "></span>
+        </div>
+
+        <div th:fragment="message-panel" class="col-md-4">
+            <div th:if="${success!=null}" class="alert" role="alert" th:classappend="${success}==true ? 'alert-primary' : 'alert-danger'">
+                <span th:text="${message}"></span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <span class="float-end"><a th:href="@{/employees}">Back to list<i class="fas fa-long-arrow-alt-right"></i></a></span>
+        </div>
+    </div>
+
+    <form class="p-2" enctype="multipart/form-data" th:action="@{${action == 'new' ? '/employees/new' : '/employees/edit/{id}'}(id=${employee.id})}" method="post" th:object="${employee}">
+        <div class="form-group row p-2">
+            <label for="id" class="col-sm-2 col-form-label">Id</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control bg-dark bg-opacity-50" id="id" th:field="${employee.id}" readonly/>
+            </div>
+        </div>
+        <div class="form-group row p-2">
+            <label for="firstName" class="col-sm-2 col-form-label">FirstName</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" id="firstName" th:field="${employee.firstName}" placeholder="FirstName" th:required="true"/>
+            </div>
+        </div>
+        <div class="form-group row p-2">
+            <label for="lastName" class="col-sm-2 col-form-label">LastName</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" id="lastName" th:field="${employee.lastName}" placeholder="LastName" th:required="true"/>
+            </div>
+        </div>
+        <div class="form-group row p-2">
+            <label for="position" class="col-sm-2 col-form-label">Position</label>
+            <div class="col-sm-4">
+                <select class="form-control" id="position" name="position" required>
+                    <option
+                            th:each="position : ${T(hu.webuni.hr.alagi.model.Position).values()}"
+                            th:value="${position}"
+                            th:text="${position}"
+                            th:selected="${employee.position}==${position}"
+                    ></option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group row p-2">
+            <label for="monthlySalary" class="col-sm-2 col-form-label">Monthly Salary</label>
+            <div class="col-sm-4">
+                <input type="number" class="form-control" id="monthlySalary" th:field="${employee.monthlySalary}" th:min="0"/>
+            </div>
+        </div>
+        <div class="form-group row p-2">
+            <label for="startDate" class="col-sm-2 col-form-label">Start Date</label>
+            <div class="col-sm-4">
+                <input type="datetime-local" class="form-control" id="startDate" th:field="${employee.startDate}" th:attr="value=${#temporals.format(employee.startDate, 'yyyy-MM-dd''T''HH:mm')}" />
+            </div>
+        </div>
+        <button class="btn btn-secondary mt-4"  type="submit" name="add" th:text="${action} == 'new' ? 'Add new employee' :'Update employee' ">Button Text</button>
+    </form>
+</div>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.js}"></script>
+</body>
+</html>

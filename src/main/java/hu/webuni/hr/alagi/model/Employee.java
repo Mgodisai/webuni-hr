@@ -1,5 +1,7 @@
 package hu.webuni.hr.alagi.model;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.time.LocalDateTime;
 
 public class Employee {
@@ -9,9 +11,8 @@ public class Employee {
    private String lastName;
    private Position position;
    private int monthlySalary;
+   @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
    private LocalDateTime startDate;
-
-
 
    public Employee(String firstName, String lastName, Position position, int monthlySalary, LocalDateTime startDate) {
       this.id = lastId++;
@@ -31,6 +32,10 @@ public class Employee {
 
    public void setId() {
       this.id = lastId++;
+   }
+
+   public void setId(long id) {
+      this.id = id;
    }
 
    public String getFullName() {

@@ -4,10 +4,7 @@ import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.model.Position;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
@@ -15,6 +12,7 @@ import java.time.Month;
 import java.util.*;
 
 @Controller
+@RequestMapping("/employees")
 public class EmployeeWebController {
 
    private final List<Employee> employees = new ArrayList<>();
@@ -28,27 +26,68 @@ public class EmployeeWebController {
       employees.add(new Employee("Béla", "Adat", Position.ADMINISTRATOR, 900, LocalDateTime.of(2011, Month.JANUARY, 5, 8,0 )));
    }
 
-
-   @GetMapping("/")
-   public String getIndexPage() {
-      return "index";
-   }
-
-   @GetMapping("/employees")
-   public String getEmployees(Map<String, Object> model) {
-      model.put("employees", employees);
-      model.put("newEmployee", new Employee());
+   @GetMapping
+   public String getEmployees(
+         Map<String, Object> model,
+         @RequestParam(required = false) String sortBy,
+         @RequestParam(required = false) String direction) {
+      if (sortBy!=null) {
+          Comparator<Employee> c = switch (sortBy) {
+            case "firstName" -> Comparator.comparing(Employee::getFirstName);
+            case "lastName" -> Comparator.comparing(Employee::getLastName);
+            case "monthlySalary" -> Comparator.comparing(Employee::getMonthlySalary);
+            case "startDate" -> Comparator.comparing(Employee::getStartDate);
+            default -> Comparator.comparing(Employee::getId);
+         };
+          if (Objects.equals(direction, "desc")) {
+             c = c.reversed();
+          }
+         List<Employee> orderedEmployeeList = employees.stream().sorted(c).toList();
+         model.put("employees", orderedEmployeeList);
+      } else {
+         model.put("employees", employees);
+      }
       return "employees";
    }
 
-   @PostMapping("/employees")
-   public String addNewEmployee(@ModelAttribute("newEmployee") Employee newEmployee, BindingResult result, RedirectAttributes redirectAttributes) {
+   @GetMapping("/edit/{id}")
+   public String showUpdateForm(
+         @PathVariable Long id,
+         Map<String, Object> model,
+         final RedirectAttributes redirectAttributes) {
+      model.put("action", "upd");
+      Optional<Employee> updatingEmployee = employees.stream().filter(e-> Objects.equals(e.getId(), id)).findFirst();
+
+      if(updatingEmployee.isPresent()) {
+         model.putIfAbsent("employee", updatingEmployee.get());
+         return "employee-form";
+      } else {
+         redirectAttributes.addFlashAttribute("success",false);
+         redirectAttributes.addFlashAttribute("message","Employee not exists with id: "+id);
+      }
+      return "redirect:/employees";
+   }
+
+   @GetMapping("/new")
+   public String showEmptyForm(Map<String, Object> model) {
+      model.put("action", "new");
+      if (model.get("employee")==null) {
+         Employee newEmployee = new Employee();
+         newEmployee.setId();
+         model.put("employee", newEmployee);
+      }
+      return "employee-form";
+   }
+
+   @PostMapping("/new")
+   public String addNewEmployee(@ModelAttribute("employee") Employee employee, BindingResult result, RedirectAttributes redirectAttributes) {
       String message;
       boolean success;
-      if (newEmployee!=null && !result.hasErrors()) {
-         newEmployee.setStartDate(LocalDateTime.now());
-         newEmployee.setId();
-         employees.add(newEmployee);
+      if (employee!=null && !result.hasErrors()) {
+         if (employee.getStartDate()==null) {
+            employee.setStartDate(LocalDateTime.now());
+         }
+         employees.add(employee);
          message = "Employee added successfully";
          success=true;
       } else {
@@ -60,8 +99,37 @@ public class EmployeeWebController {
       return "redirect:/employees";
    }
 
-   @GetMapping("employees/delete/{id}")
-   public String deleteIngredient(
+   @PostMapping("/edit/{id}")
+   public String updateEmployee(
+         @PathVariable Long id,
+         @ModelAttribute("employee") Employee employee,
+         BindingResult result,
+         final RedirectAttributes redirectAttributes) {
+
+      String view;
+      if (result.hasErrors()) {
+         redirectAttributes.addFlashAttribute("success",false);
+         redirectAttributes.addFlashAttribute("message","Update failed!");
+         redirectAttributes.addFlashAttribute("employee", employee);
+         view = "redirect:/employees/edit/"+id;
+      } else {
+         Optional<Employee> modifiedEmployee = employees.stream().filter(e-> Objects.equals(e.getId(), id)).findFirst();
+         if (modifiedEmployee.isPresent()) {
+            int index = employees.indexOf(modifiedEmployee.get());
+            employees.set(index, employee);
+            redirectAttributes.addFlashAttribute("success",true);
+            redirectAttributes.addFlashAttribute("message","Updated successfully: "+employee.getFullName());
+         } else {
+            redirectAttributes.addFlashAttribute("success",false);
+            redirectAttributes.addFlashAttribute("message","Employee not exists with id: "+id);
+         }
+         view = "redirect:/employees";
+      }
+      return view;
+   }
+
+   @GetMapping("/delete/{id}")
+   public String deleteEmployee(
          @PathVariable Long id,
          RedirectAttributes redirectAttributes) {
       Optional<Employee> deletingEmployee = employees.stream().filter(x-> Objects.equals(x.getId(), id)).findFirst();
