@@ -1,7 +1,9 @@
 package hu.webuni.hr.alagi.controller.rest;
 
 import hu.webuni.hr.alagi.dto.EmployeeDto;
+import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.model.Position;
+import hu.webuni.hr.alagi.service.EmployeeService;
 import hu.webuni.hr.alagi.service.MapService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,7 @@ import java.util.Optional;
 public class EmployeeRestController {
 
    private final MapService<Long> mapService;
+   private final EmployeeService employeeService;
 
    private final Map<Long, EmployeeDto> employees = new HashMap<>();
 
@@ -32,8 +35,10 @@ public class EmployeeRestController {
       employees.put(6L, new EmployeeDto(6L, "Béla", "Adat", Position.ADMINISTRATOR, 900, LocalDateTime.of(2011, Month.JANUARY, 5, 8,0 )));
    }
 
-   public EmployeeRestController(@Autowired MapService<Long> mapService) {
+   @Autowired
+   public EmployeeRestController(MapService<Long> mapService, EmployeeService employeeService) {
       this.mapService = mapService;
+      this.employeeService = employeeService;
    }
 
    @GetMapping
@@ -103,5 +108,10 @@ public class EmployeeRestController {
    public ResponseEntity<Void> deleteAllEmployees() {
       employees.clear();
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+   }
+
+   @GetMapping("/raise-percentage")
+   public ResponseEntity<Integer> getSalaryRaisePercentForEmployee(@RequestBody Employee employee) {
+      return ResponseEntity.ok(employeeService.getPayRaisePercent(employee));
    }
 }
