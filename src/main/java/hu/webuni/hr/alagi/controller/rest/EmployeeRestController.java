@@ -43,20 +43,12 @@ public class EmployeeRestController {
 
    @GetMapping
    public ResponseEntity<List<EmployeeDto>> getAllEmployees(@RequestParam(value="minSalary", required = false) Optional<Integer> minSalaryOptional) {
-//      if (employees.isEmpty()) {
-//         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-//      } else
          if (minSalaryOptional.isPresent()){
          int minSalary = minSalaryOptional.get();
          List<EmployeeDto> resultList = employees
                .values().stream()
                .filter(employeeDto -> employeeDto.getMonthlySalary() >= minSalary)
                .toList();
-//         if (resultList.size()==0) {
-//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//         } else {
-//            return new ResponseEntity<>(resultList, HttpStatus.OK);
-//         }
          return new ResponseEntity<>(resultList, HttpStatus.OK);
       } else {
          return new ResponseEntity<>(employees.values().stream().toList(),HttpStatus.OK);

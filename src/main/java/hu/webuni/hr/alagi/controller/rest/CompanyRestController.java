@@ -23,25 +23,14 @@ public class CompanyRestController {
 
    @GetMapping
    public ResponseEntity<List<CompanyDto>> getAllCompanies(@RequestParam(value="full", required = false) Optional<Boolean> includeEmployeeList) {
-      List<CompanyDto> resultList;
-      if (includeEmployeeList.isPresent()){
-         resultList = companyService.getAllCompanies(includeEmployeeList.get());
-      } else {
-         resultList = companyService.getAllCompanies(false);
-      }
-      return ResponseEntity.ok(resultList);
+      return ResponseEntity.ok(companyService.getAllCompanies(includeEmployeeList.orElse(false)));
    }
 
    @GetMapping("/{companyId}")
    public ResponseEntity<CompanyDto> getCompanyById(
          @PathVariable Long companyId,
          @RequestParam(value="full", required = false) Optional<Boolean> includeEmployeeList) {
-      CompanyDto requestedCompany;
-      if (includeEmployeeList.isPresent()) {
-         requestedCompany = companyService.getCompanyById(companyId, includeEmployeeList.get());
-      } else {
-         requestedCompany = companyService.getCompanyById(companyId, false);
-      }
+      CompanyDto requestedCompany= companyService.getCompanyById(companyId, includeEmployeeList.orElse(false));
       if (requestedCompany==null) {
          return ResponseEntity.notFound().build();
       } else {
