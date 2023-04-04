@@ -2,7 +2,9 @@ package hu.webuni.hr.alagi.service;
 
 import hu.webuni.hr.alagi.dto.CompanyDto;
 import hu.webuni.hr.alagi.dto.EmployeeDto;
+import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.repository.CompanyRepository;
+import hu.webuni.hr.alagi.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,30 +13,32 @@ import java.util.List;
 
 @Service
 public class CompanyService {
-   CompanyRepository companyRepository;
+   private final CompanyRepository companyRepository;
+   private final EmployeeRepository employeeRepository;
 
-   @Autowired
-   public CompanyService(CompanyRepository companyRepository) {
+   public CompanyService(@Autowired CompanyRepository companyRepository, EmployeeRepository employeeRepository) {
       this.companyRepository = companyRepository;
+      this.employeeRepository = employeeRepository;
    }
-   public List<CompanyDto> getAllCompanies(boolean includeEmployeeList) {
+
+   public List<Company> getAllCompanies(boolean includeEmployeeList) {
       if (!includeEmployeeList) {
-         List<CompanyDto> list = companyRepository.findAll();
+         List<Company> list = companyRepository.findAll();
          return list
                .stream()
-               .map(c->new CompanyDto(c.getId(), c.getRegisterNumber(), c.getName(), c.getAddress(), Collections.emptyList()))
+               .map(c->new Company(c.getId(), c.getRegisterNumber(), c.getName(), c.getAddress(), Collections.emptyList()))
                .toList();
       }
       return companyRepository.findAll();
    }
 
-   public CompanyDto getCompanyById(Long id, boolean includeEmployeeList) {
-      CompanyDto origCompanyDto = companyRepository.findById(id);
+   public Company getCompanyById(Long id, boolean includeEmployeeList) {
+      Company origCompanyDto = companyRepository.findById(id);
       if (origCompanyDto==null) {
          return null;
       }
       if (!includeEmployeeList) {
-         return new CompanyDto(
+         return new Company(
                origCompanyDto.getId(),
                origCompanyDto.getRegisterNumber(),
                origCompanyDto.getName(),
@@ -44,10 +48,11 @@ public class CompanyService {
       return origCompanyDto;
    }
 
-   public CompanyDto createCompany(CompanyDto company) {
+   public Company createCompany(Company company) {
       if (companyRepository.findById(company.getId())!=null) {
          return null;
       }
+
       return companyRepository.save(company);
    }
 
@@ -55,7 +60,7 @@ public class CompanyService {
       return companyRepository.findById(id)!=null;
    }
 
-   public CompanyDto updateCompany(CompanyDto company) {
+   public Company updateCompany(Company company) {
       return companyRepository.save(company);
    }
 
@@ -63,7 +68,7 @@ public class CompanyService {
       companyRepository.deleteById(id);
    }
 
-   public CompanyDto addEmployeeToCompany(Long companyId, EmployeeDto employee) {
+   public CompanyDto addEmployeeToCompany(Long companyId, Employee employee) {
       return companyRepository.addEmployee(companyId, employee);
    }
 
@@ -74,5 +79,7 @@ public class CompanyService {
    public CompanyDto changeEmployeeListOfCompany(Long companyId, List<EmployeeDto> employeeDtoList) {
       return companyRepository.addNewEmployeeList(companyId, employeeDtoList);
    }
+
+
 
 }

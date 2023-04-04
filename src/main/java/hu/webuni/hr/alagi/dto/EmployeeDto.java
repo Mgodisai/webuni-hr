@@ -1,14 +1,21 @@
 package hu.webuni.hr.alagi.dto;
 
 import hu.webuni.hr.alagi.model.Position;
+import jakarta.validation.constraints.*;
+
 import java.time.LocalDateTime;
 
 public class EmployeeDto {
    private Long id;
+
+   @NotEmpty
    private String firstName;
+   @NotEmpty
    private String lastName;
    private Position position;
+   @Positive
    private int monthlySalary;
+   @PastOrPresent
    private LocalDateTime startDate;
 
    public EmployeeDto(Long id, String firstName, String lastName, Position position, int monthlySalary, LocalDateTime startDate) {

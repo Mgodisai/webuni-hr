@@ -5,6 +5,7 @@ import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.model.Position;
 import hu.webuni.hr.alagi.service.EmployeeService;
 import hu.webuni.hr.alagi.service.MapService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,8 @@ public class EmployeeRestController {
    private final MapService<Long> mapService;
    private final EmployeeService employeeService;
 
+   private final EmployeeMapper employeeMapper;
+
    private final Map<Long, EmployeeDto> employees = new HashMap<>();
 
    {
@@ -36,9 +39,10 @@ public class EmployeeRestController {
    }
 
    @Autowired
-   public EmployeeRestController(MapService<Long> mapService, EmployeeService employeeService) {
+   public EmployeeRestController(MapService<Long> mapService, EmployeeService employeeService, EmployeeMapper employeeMapper) {
       this.mapService = mapService;
       this.employeeService = employeeService;
+      this.employeeMapper = employeeMapper;
    }
 
    @GetMapping
@@ -66,7 +70,7 @@ public class EmployeeRestController {
    }
 
    @PostMapping
-   public ResponseEntity<EmployeeDto> addNewEmployee(@RequestBody EmployeeDto employeeDto) {
+   public ResponseEntity<EmployeeDto> addNewEmployee(@RequestBody @Valid EmployeeDto employeeDto) {
       if (employees.containsKey(employeeDto.getId()) || employeeDto.getId()<1) {
          Long newId = mapService.getFirstFreeKey(employees.keySet());
          employeeDto.setId(newId);
