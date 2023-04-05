@@ -1,24 +1,24 @@
 package hu.webuni.hr.alagi.repository;
 
-import hu.webuni.hr.alagi.dto.CompanyDto;
-import hu.webuni.hr.alagi.dto.EmployeeDto;
 import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.model.Employee;
-import hu.webuni.hr.alagi.model.Position;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.*;
 
 @Repository
-public class CompanyRepositoryImpl implements MyCrudLikeRepository<Company, Long> {
+public class CompanyRepositoryImpl implements CompanyRepository {
    private final Map<Long, Company> companyList = new HashMap<>();
    {
-      Employee employee1 = new Employee("József", "Java", Position.CEO, 10000, LocalDateTime.of(2017, Month.NOVEMBER, 1, 8,0 ));
-      Employee employee2 = new Employee("Géza", "Piton", Position.CUSTOMER_SUPPORT, 3000, LocalDateTime.of(2020, Month.JUNE, 15, 8,0 ));
-      companyList.put(1L, new Company(1L, "14-02-123456", "Kerék Kft", "7400 Kaposvár, Fő u. 12.", new ArrayList<>(Arrays.asList(employee1, employee2))));
+      ArrayList<Employee> defaultEmployeeList = new ArrayList<>(Arrays.asList(
+            EmployeeRepositoryImpl.employee1,
+            EmployeeRepositoryImpl.employee2,
+            EmployeeRepositoryImpl.employee3,
+            EmployeeRepositoryImpl.employee4,
+            EmployeeRepositoryImpl.employee5,
+            EmployeeRepositoryImpl.employee6
+      ));
+      companyList.put(1L, new Company(1L, "14-02-123456", "Kerék Kft", "7400 Kaposvár, Fő u. 12.", defaultEmployeeList));
    }
 
    @Override

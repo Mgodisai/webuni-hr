@@ -1,8 +1,7 @@
 package hu.webuni.hr.alagi.service;
 
-import hu.webuni.hr.alagi.dto.CompanyDto;
-import hu.webuni.hr.alagi.dto.EmployeeDto;
 import hu.webuni.hr.alagi.model.Company;
+import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.repository.CompanyRepository;
 import hu.webuni.hr.alagi.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +11,12 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
-public class CompanyService {
+public class CompanyCrudService {
    private final CompanyRepository companyRepository;
    private final EmployeeRepository employeeRepository;
 
-   public CompanyService(@Autowired CompanyRepository companyRepository, EmployeeRepository employeeRepository) {
+   @Autowired
+   public CompanyCrudService(CompanyRepository companyRepository, EmployeeRepository employeeRepository) {
       this.companyRepository = companyRepository;
       this.employeeRepository = employeeRepository;
    }
@@ -68,18 +68,36 @@ public class CompanyService {
       companyRepository.deleteById(id);
    }
 
-   public CompanyDto addEmployeeToCompany(Long companyId, Employee employee) {
-      return companyRepository.addEmployee(companyId, employee);
+   public Company addEmployeeToCompany(Long companyId, Employee employee) {
+      Company company = companyRepository.findById(companyId);
+      if (company == null) {
+         return null;
+      }
+      Employee savedEmployee = employeeRepository.save(employee);
+      company.getEmployeeList().add(savedEmployee);
+      return company;
    }
 
-   public CompanyDto removeEmployeeByIdFromCompany(Long companyId, Long employeeId) {
-      return companyRepository.removeEmployee(companyId, employeeId);
+   public Company removeEmployeeByIdFromCompany(Long companyId, Long employeeId) {
+      Company company = companyRepository.findById(companyId);
+      if (company == null) {
+         return null;
+      }
+      Employee deletingEmployee = employeeRepository.findById(employeeId);
+      employeeRepository.delete(deletingEmployee);
+      company.getEmployeeList().remove(deletingEmployee);
+      return company;
    }
 
-   public CompanyDto changeEmployeeListOfCompany(Long companyId, List<EmployeeDto> employeeDtoList) {
-      return companyRepository.addNewEmployeeList(companyId, employeeDtoList);
+   public Company changeEmployeeListOfCompany(Long companyId, List<Employee> employeeList) {
+      Company company = companyRepository.findById(companyId);
+      if (company == null) {
+         return null;
+      }
+      company.setEmployeeList(employeeList);
+      for (Employee e : employeeList) {
+         employeeRepository.save(e);
+      }
+      return company;
    }
-
-
-
 }

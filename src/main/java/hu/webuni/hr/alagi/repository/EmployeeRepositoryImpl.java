@@ -1,17 +1,41 @@
 package hu.webuni.hr.alagi.repository;
 
-import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.model.Position;
+import hu.webuni.hr.alagi.service.MapService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Repository
-public class EmployeeRepositoryImpl implements MyCrudLikeRepository<Employee, Long> {
+public class EmployeeRepositoryImpl implements EmployeeRepository{
+   public static Employee employee1 = new Employee("József", "Java", Position.CEO, 10000, LocalDateTime.of(2017, Month.NOVEMBER, 1, 8,0 ));
+   public static Employee employee2 = new Employee("Géza", "Piton", Position.CUSTOMER_SUPPORT, 3000, LocalDateTime.of(2020, Month.JUNE, 15, 8,0 ));
+   public static Employee employee3 = new Employee("Paszkál", "Kis", Position.HR_MANAGER,2000, LocalDateTime.of(2023, Month.JANUARY, 5, 8,0 ));
+   public static Employee employee4 = new Employee("Tibor", "Kezdő", Position.TESTER, 1000, LocalDateTime.of(2003, Month.JANUARY, 5, 8,0 ));
+   public static Employee employee5 = new Employee("Kálmán", "Kóder", Position.DEVELOPER, 5000, LocalDateTime.of(2022, Month.JANUARY, 5, 8,0));
+   public static Employee employee6 = new Employee("Béla", "Adat", Position.ADMINISTRATOR, 900, LocalDateTime.of(2011, Month.JANUARY, 5, 8,0 ));
+
+   private final MapService<Long> mapService;
    private final Map<Long, Employee> employeeList = new HashMap<>();
+
+   {
+      employeeList.put(employee1.getId(), employee1);
+      employeeList.put(employee2.getId(), employee2);
+      employeeList.put(employee3.getId(), employee3);
+      employeeList.put(employee4.getId(), employee4);
+      employeeList.put(employee5.getId(), employee5);
+      employeeList.put(employee6.getId(), employee6);
+   }
+
+   public EmployeeRepositoryImpl(@Autowired MapService<Long> mapService) {
+      this.mapService = mapService;
+   }
 
    @Override
    public List<Employee> findAll() {
@@ -41,10 +65,7 @@ public class EmployeeRepositoryImpl implements MyCrudLikeRepository<Employee, Lo
    @Override
    public Employee save(Employee employee) {
       if (employee.getId() == null) {
-         long newId = employeeList.values().stream()
-                 .mapToLong(Employee::getId)
-                 .max()
-                 .orElse(0L) + 1;
+         Long newId = mapService.getFirstFreeKey(employeeList.keySet());
          employee.setId(newId);
          employeeList.put(newId, employee);
       } else {

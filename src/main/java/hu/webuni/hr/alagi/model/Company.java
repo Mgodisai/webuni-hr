@@ -51,11 +51,11 @@ public class Company {
         this.address = address;
     }
 
-    public List<Employee> getEmployeeDtoList() {
+    public List<Employee> getEmployeeList() {
         return employeeList;
     }
 
-    public void setEmployeeDtoList(List<Employee> employeeList) {
+    public void setEmployeeList(List<Employee> employeeList) {
         this.employeeList = new ArrayList<>(employeeList);
     }
 }

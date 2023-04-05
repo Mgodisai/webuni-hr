@@ -1,113 +1,89 @@
 package hu.webuni.hr.alagi.controller.rest;
 
+import hu.webuni.hr.alagi.exception.EntityAlreadyExistsException;
 import hu.webuni.hr.alagi.dto.EmployeeDto;
+import hu.webuni.hr.alagi.exception.EntityNotExistsWithGivenIdException;
 import hu.webuni.hr.alagi.model.Employee;
-import hu.webuni.hr.alagi.model.Position;
+import hu.webuni.hr.alagi.service.EmployeeCrudService;
 import hu.webuni.hr.alagi.service.EmployeeService;
-import hu.webuni.hr.alagi.service.MapService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/employees")
 public class EmployeeRestController {
 
-   private final MapService<Long> mapService;
+   private final EmployeeCrudService employeeCrudService;
    private final EmployeeService employeeService;
-
    private final EmployeeMapper employeeMapper;
 
-   private final Map<Long, EmployeeDto> employees = new HashMap<>();
-
-   {
-      employees.put(1L, new EmployeeDto(1L,"József", "Java", Position.CEO, 10000, LocalDateTime.of(2017, Month.NOVEMBER, 1, 8,0 )));
-      employees.put(2L, new EmployeeDto(2L, "Géza", "Piton", Position.CUSTOMER_SUPPORT, 3000, LocalDateTime.of(2020, Month.JUNE, 15, 8,0 )));
-      employees.put(3L, new EmployeeDto(3L, "Paszkál", "Kis", Position.HR_MANAGER,2000, LocalDateTime.of(2023, Month.JANUARY, 5, 8,0 )));
-      employees.put(4L, new EmployeeDto(4L, "Tibor", "Kezdő", Position.TESTER, 1000, LocalDateTime.of(2003, Month.JANUARY, 5, 8,0 )));
-      employees.put(5L, new EmployeeDto(5L, "Kálmán", "Kóder", Position.DEVELOPER, 5000, LocalDateTime.of(2022, Month.JANUARY, 5, 8,0)));
-      employees.put(6L, new EmployeeDto(6L, "Béla", "Adat", Position.ADMINISTRATOR, 900, LocalDateTime.of(2011, Month.JANUARY, 5, 8,0 )));
-   }
-
    @Autowired
-   public EmployeeRestController(MapService<Long> mapService, EmployeeService employeeService, EmployeeMapper employeeMapper) {
-      this.mapService = mapService;
+   public EmployeeRestController(EmployeeCrudService employeeCrudService, EmployeeService employeeService, EmployeeMapper employeeMapper) {
+      this.employeeCrudService = employeeCrudService;
       this.employeeService = employeeService;
       this.employeeMapper = employeeMapper;
    }
 
    @GetMapping
    public ResponseEntity<List<EmployeeDto>> getAllEmployees(@RequestParam(value="minSalary", required = false) Optional<Integer> minSalaryOptional) {
-         if (minSalaryOptional.isPresent()){
+      if (minSalaryOptional.isPresent()){
          int minSalary = minSalaryOptional.get();
-         List<EmployeeDto> resultList = employees
-               .values().stream()
-               .filter(employeeDto -> employeeDto.getMonthlySalary() >= minSalary)
-               .toList();
-         return new ResponseEntity<>(resultList, HttpStatus.OK);
+         List<Employee> employeeList = employeeCrudService.getAllEmployeesUsingMinSalary(minSalary);
+         return new ResponseEntity<>(employeeMapper.employeesToDtos(employeeList), HttpStatus.OK);
       } else {
-         return new ResponseEntity<>(employees.values().stream().toList(),HttpStatus.OK);
+         return new ResponseEntity<>(employeeMapper.employeesToDtos(employeeCrudService.getAllEmployees()),HttpStatus.OK);
       }
    }
 
    @GetMapping("/{id}")
-   public ResponseEntity<EmployeeDto> getEmployeeById(@PathVariable Long id) {
-      EmployeeDto requestedEmployee = employees.get(id);
+   public EmployeeDto getEmployeeById(@PathVariable Long id) {
+      Employee requestedEmployee = employeeCrudService.getEmployeeById(id);
       if (requestedEmployee==null) {
-         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+         throw new EntityNotExistsWithGivenIdException(id, Employee.class);
       } else {
-         return new ResponseEntity<>(requestedEmployee,HttpStatus.OK);
+         return employeeMapper.employeeToDto(requestedEmployee);
       }
    }
 
    @PostMapping
-   public ResponseEntity<EmployeeDto> addNewEmployee(@RequestBody @Valid EmployeeDto employeeDto) {
-      if (employees.containsKey(employeeDto.getId()) || employeeDto.getId()<1) {
-         Long newId = mapService.getFirstFreeKey(employees.keySet());
-         employeeDto.setId(newId);
+   public EmployeeDto addNewEmployee(@RequestBody @Valid EmployeeDto employeeDto) {
+      Employee savedEmployee = employeeCrudService.createEmployee(employeeMapper.dtoToEmployee(employeeDto));
+      if (savedEmployee==null) {
+         throw new EntityAlreadyExistsException(employeeDto.getId(), Employee.class);
       }
-      employees.put(employeeDto.getId(), employeeDto);
-      return new ResponseEntity<>(employeeDto, HttpStatus.OK);
+      return employeeMapper.employeeToDto(savedEmployee);
    }
 
    @PutMapping("/{id}")
-   public ResponseEntity<EmployeeDto> updateEmployeeById(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
-      if (!employees.containsKey(id)) {
-         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+   public EmployeeDto updateEmployeeById(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
+      if (employeeCrudService.isEmployeeExistsById(id)) {
+         Employee modifiedEmployee = employeeMapper.dtoToEmployee(employeeDto);
+         modifiedEmployee.setId(id);
+         modifiedEmployee = employeeCrudService.updateEmployee(modifiedEmployee);
+         return employeeMapper.employeeToDto(modifiedEmployee);
       } else {
-         employeeDto.setId(id);
-         employees.put(id, employeeDto);
-         return new ResponseEntity<>(employeeDto, HttpStatus.OK);
+         throw new EntityNotExistsWithGivenIdException(id, Employee.class);
       }
    }
 
    @DeleteMapping("/{id}")
    public ResponseEntity<Void> deleteEmployeeById(@PathVariable Long id) {
-      if (!employees.containsKey(id)) {
-         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      if (!employeeCrudService.isEmployeeExistsById(id)) {
+         throw new EntityNotExistsWithGivenIdException(id, Employee.class);
       } else {
-         employees.remove(id);
-         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+         employeeCrudService.deleteEmployee(id);
+         return ResponseEntity.noContent().build();
       }
    }
 
-   @DeleteMapping
-   public ResponseEntity<Void> deleteAllEmployees() {
-      employees.clear();
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-   }
-
    @GetMapping("/raise-percentage")
-   public ResponseEntity<Integer> getSalaryRaisePercentForEmployee(@RequestBody Employee employee) {
-      return ResponseEntity.ok(employeeService.getPayRaisePercent(employee));
+   public ResponseEntity<Integer> getSalaryRaisePercentForEmployee(@RequestBody EmployeeDto employeeDto) {
+      return ResponseEntity.ok(employeeService.getPayRaisePercent(employeeMapper.dtoToEmployee(employeeDto)));
    }
 }
