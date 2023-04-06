@@ -1,10 +1,11 @@
 package hu.webuni.hr.alagi.controller.rest;
 
 import hu.webuni.hr.alagi.dto.CompanyDto;
+import hu.webuni.hr.alagi.exception.EntityAlreadyExistsException;
+import hu.webuni.hr.alagi.exception.EntityNotExistsWithGivenIdException;
 import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.service.CompanyCrudService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,27 +29,28 @@ public class CompanyRestController {
       return companyMapper.companiesToDtos(companyList);
    }
 
-//   @GetMapping("/{companyId}")
-//   public ResponseEntity<CompanyDto> getCompanyById(
-//         @PathVariable Long companyId,
-//         @RequestParam(value="full", required = false) Optional<Boolean> includeEmployeeList) {
-//      CompanyDto requestedCompany= companyService.getCompanyById(companyId, includeEmployeeList.orElse(false));
-//      if (requestedCompany==null) {
-//         return ResponseEntity.notFound().build();
-//      } else {
-//         return ResponseEntity.ok(requestedCompany);
-//      }
-//   }
-//
-//   @PostMapping
-//   public ResponseEntity<?> addNewCompany(@RequestBody CompanyDto companyDto) {
-//      CompanyDto newCompany = companyService.createCompany(companyDto);
-//      if (newCompany==null) {
-//         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("company with the given ID ("+companyDto.getId()+") already exists");
-//      }
-//      return ResponseEntity.ok(newCompany);
-//   }
-//
+   @GetMapping("/{companyId}")
+   public CompanyDto getCompanyById(
+         @PathVariable Long companyId,
+         @RequestParam(value="full", required = false) Optional<Boolean> includeEmployeeList) {
+
+      Company requestedCompany= companyCrudService.getCompanyById(companyId, includeEmployeeList.orElse(false));
+      if (requestedCompany==null) {
+         throw new EntityNotExistsWithGivenIdException(companyId, Company.class);
+      } else {
+         return companyMapper.companyToDto(requestedCompany);
+      }
+   }
+
+   @PostMapping
+   public CompanyDto addNewCompany(@RequestBody CompanyDto companyDto) {
+      Company savedCompany = companyCrudService.createCompany(companyMapper.dtoToCompany(companyDto));
+      if (savedCompany==null) {
+         throw new EntityAlreadyExistsException(companyDto.getId(), Company.class);
+      }
+      return companyMapper.companyToDto(savedCompany);
+   }
+
 //   @PutMapping("/{companyId}")
 //   public ResponseEntity<CompanyDto> updateCompanyById(@PathVariable Long companyId, @RequestBody CompanyDto companyDto) {
 //      if (companyService.isCompanyExistsById(companyId)) {

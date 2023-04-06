@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 
 public class EmployeeDto {
    private Long id;
-
    @NotEmpty
    private String firstName;
    @NotEmpty

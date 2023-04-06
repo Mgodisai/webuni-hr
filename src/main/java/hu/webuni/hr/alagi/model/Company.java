@@ -56,6 +56,13 @@ public class Company {
     }
 
     public void setEmployeeList(List<Employee> employeeList) {
-        this.employeeList = new ArrayList<>(employeeList);
+        this.employeeList = employeeList;
+    }
+
+    public void addEmployee(Employee employee) {
+        if (employeeList == null) {
+            employeeList = new ArrayList<>();
+        }
+        employeeList.add(employee);
     }
 }

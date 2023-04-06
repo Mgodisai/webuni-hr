@@ -52,7 +52,9 @@ public class CompanyCrudService {
       if (companyRepository.findById(company.getId())!=null) {
          return null;
       }
-
+      for (Employee e : company.getEmployeeList()) {
+         employeeRepository.save(e);
+      }
       return companyRepository.save(company);
    }
 

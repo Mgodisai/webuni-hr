@@ -1,29 +1,26 @@
 package hu.webuni.hr.alagi.controller.web;
 
 import hu.webuni.hr.alagi.model.Employee;
-import hu.webuni.hr.alagi.model.Position;
+import hu.webuni.hr.alagi.service.EmployeeCrudService;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Controller
 @RequestMapping("/employees")
 public class EmployeeWebController {
 
-   private final List<Employee> employees = new ArrayList<>();
+   private final EmployeeCrudService employeeCrudService;
 
-   {
-      employees.add(new Employee("József", "Java", Position.CEO, 10000, LocalDateTime.of(2017, Month.NOVEMBER, 1, 8,0 )));
-      employees.add(new Employee("Géza", "Piton", Position.CUSTOMER_SUPPORT, 3000, LocalDateTime.of(2020, Month.JUNE, 15, 8,0 )));
-      employees.add(new Employee("Paszkál", "Kis", Position.HR_MANAGER,2000, LocalDateTime.of(2023, Month.JANUARY, 5, 8,0 )));
-      employees.add(new Employee("Tibor", "Kezdő", Position.TESTER, 1000, LocalDateTime.of(2003, Month.JANUARY, 5, 8,0 )));
-      employees.add(new Employee("Kálmán", "Kóder", Position.DEVELOPER, 5000, LocalDateTime.of(2022, Month.JANUARY, 5, 8,0 )));
-      employees.add(new Employee("Béla", "Adat", Position.ADMINISTRATOR, 900, LocalDateTime.of(2011, Month.JANUARY, 5, 8,0 )));
+   public EmployeeWebController(EmployeeCrudService employeeCrudService) {
+      this.employeeCrudService = employeeCrudService;
    }
 
    @GetMapping
@@ -42,10 +39,10 @@ public class EmployeeWebController {
           if (Objects.equals(direction, "desc")) {
              c = c.reversed();
           }
-         List<Employee> orderedEmployeeList = employees.stream().sorted(c).toList();
+         List<Employee> orderedEmployeeList = employeeCrudService.getAllEmployees().stream().sorted(c).toList();
          model.put("employees", orderedEmployeeList);
       } else {
-         model.put("employees", employees);
+         model.put("employees", employeeCrudService.getAllEmployees());
       }
       return "employees";
    }
@@ -56,10 +53,9 @@ public class EmployeeWebController {
          Map<String, Object> model,
          final RedirectAttributes redirectAttributes) {
       model.put("action", "upd");
-      Optional<Employee> updatingEmployee = employees.stream().filter(e-> Objects.equals(e.getId(), id)).findFirst();
-
-      if(updatingEmployee.isPresent()) {
-         model.putIfAbsent("employee", updatingEmployee.get());
+      Employee updatingEmployee = employeeCrudService.getEmployeeById(id);
+      if(updatingEmployee!=null) {
+         model.putIfAbsent("employee", updatingEmployee);
          return "employee-form";
       } else {
          redirectAttributes.addFlashAttribute("success",false);
@@ -73,7 +69,6 @@ public class EmployeeWebController {
       model.put("action", "new");
       if (model.get("employee")==null) {
          Employee newEmployee = new Employee();
-         newEmployee.setId();
          model.put("employee", newEmployee);
       }
       return "employee-form";
@@ -87,7 +82,7 @@ public class EmployeeWebController {
          if (employee.getStartDate()==null) {
             employee.setStartDate(LocalDateTime.now());
          }
-         employees.add(employee);
+         employeeCrudService.createEmployee(employee);
          message = "Employee added successfully";
          success=true;
       } else {
@@ -113,12 +108,12 @@ public class EmployeeWebController {
          redirectAttributes.addFlashAttribute("employee", employee);
          view = "redirect:/employees/edit/"+id;
       } else {
-         Optional<Employee> modifiedEmployee = employees.stream().filter(e-> Objects.equals(e.getId(), id)).findFirst();
-         if (modifiedEmployee.isPresent()) {
-            int index = employees.indexOf(modifiedEmployee.get());
-            employees.set(index, employee);
+         Employee modifiedEmployee = employeeCrudService.getEmployeeById(id);
+         if (modifiedEmployee!=null) {
+            modifiedEmployee.setId(id);
+            employeeCrudService.updateEmployee(modifiedEmployee);
             redirectAttributes.addFlashAttribute("success",true);
-            redirectAttributes.addFlashAttribute("message","Updated successfully: "+employee.getFullName());
+            redirectAttributes.addFlashAttribute("message","Updated successfully: "+modifiedEmployee.getFullName());
          } else {
             redirectAttributes.addFlashAttribute("success",false);
             redirectAttributes.addFlashAttribute("message","Employee not exists with id: "+id);
@@ -132,11 +127,10 @@ public class EmployeeWebController {
    public String deleteEmployee(
          @PathVariable Long id,
          RedirectAttributes redirectAttributes) {
-      Optional<Employee> deletingEmployee = employees.stream().filter(x-> Objects.equals(x.getId(), id)).findFirst();
-      if (deletingEmployee.isPresent()) {
-         employees.remove(deletingEmployee.get());
+      if (employeeCrudService.isEmployeeExistsById(id)) {
+         employeeCrudService.deleteEmployee(id);
          redirectAttributes.addFlashAttribute("success",true);
-         redirectAttributes.addFlashAttribute("message","Deleted successfully: "+deletingEmployee.get().getFullName());
+         redirectAttributes.addFlashAttribute("message","Deleted successfully!");
       } else {
          redirectAttributes.addFlashAttribute("success",false);
          redirectAttributes.addFlashAttribute("message","Cannot find Employee with id:"+id);

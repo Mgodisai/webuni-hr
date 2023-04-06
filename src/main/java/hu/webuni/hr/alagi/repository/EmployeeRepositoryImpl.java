@@ -14,12 +14,12 @@ import java.util.Map;
 
 @Repository
 public class EmployeeRepositoryImpl implements EmployeeRepository{
-   public static Employee employee1 = new Employee("József", "Java", Position.CEO, 10000, LocalDateTime.of(2017, Month.NOVEMBER, 1, 8,0 ));
-   public static Employee employee2 = new Employee("Géza", "Piton", Position.CUSTOMER_SUPPORT, 3000, LocalDateTime.of(2020, Month.JUNE, 15, 8,0 ));
-   public static Employee employee3 = new Employee("Paszkál", "Kis", Position.HR_MANAGER,2000, LocalDateTime.of(2023, Month.JANUARY, 5, 8,0 ));
-   public static Employee employee4 = new Employee("Tibor", "Kezdő", Position.TESTER, 1000, LocalDateTime.of(2003, Month.JANUARY, 5, 8,0 ));
-   public static Employee employee5 = new Employee("Kálmán", "Kóder", Position.DEVELOPER, 5000, LocalDateTime.of(2022, Month.JANUARY, 5, 8,0));
-   public static Employee employee6 = new Employee("Béla", "Adat", Position.ADMINISTRATOR, 900, LocalDateTime.of(2011, Month.JANUARY, 5, 8,0 ));
+   public static final Employee employee1 = new Employee(1L, "József", "Java", Position.CEO, 10000, LocalDateTime.of(2017, Month.NOVEMBER, 1, 8,0 ));
+   public static final Employee employee2 = new Employee(2L, "Géza", "Piton", Position.CUSTOMER_SUPPORT, 3000, LocalDateTime.of(2020, Month.JUNE, 15, 8,0 ));
+   public static final Employee employee3 = new Employee(3L, "Paszkál", "Kis", Position.HR_MANAGER,2000, LocalDateTime.of(2023, Month.JANUARY, 5, 8,0 ));
+   public static final Employee employee4 = new Employee(4L, "Tibor", "Kezdő", Position.TESTER, 1000, LocalDateTime.of(2003, Month.JANUARY, 5, 8,0 ));
+   public static final Employee employee5 = new Employee(5L, "Kálmán", "Kóder", Position.DEVELOPER, 5000, LocalDateTime.of(2022, Month.JANUARY, 5, 8,0));
+   public static final Employee employee6 = new Employee(6L, "Béla", "Adat", Position.ADMINISTRATOR, 900, LocalDateTime.of(2011, Month.JANUARY, 5, 8,0 ));
 
    private final MapService<Long> mapService;
    private final Map<Long, Employee> employeeList = new HashMap<>();
