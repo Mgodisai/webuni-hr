@@ -2,16 +2,13 @@ package hu.webuni.hr.alagi.service;
 
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.repository.EmployeeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
-public class EmployeeCrudService {
+public abstract class AbstractEmployeeService implements EmployeeService {
    private final EmployeeRepository employeeRepository;
 
-   public EmployeeCrudService(@Autowired EmployeeRepository employeeRepository) {
+   public AbstractEmployeeService(EmployeeRepository employeeRepository) {
       this.employeeRepository = employeeRepository;
    }
 

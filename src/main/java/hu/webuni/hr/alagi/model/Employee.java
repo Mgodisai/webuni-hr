@@ -29,6 +29,14 @@ public class Employee {
       this.startDate = startDate;
    }
 
+   public Employee(String firstName, String lastName, Position position, int monthlySalary, LocalDateTime startDate) {
+      this.firstName = firstName;
+      this.lastName = lastName;
+      this.position = position;
+      this.monthlySalary = monthlySalary;
+      this.startDate = startDate;
+   }
+
    public Employee() {
    }
 
@@ -36,7 +44,7 @@ public class Employee {
       return id;
    }
 
-   public void setId(long id) {
+   public void setId(Long id) {
       this.id = id;
    }
 

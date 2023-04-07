@@ -15,7 +15,7 @@
 
         <div th:fragment="message-panel" class="col-md-4">
             <div th:if="${success!=null}" class="alert" role="alert" th:classappend="${success}==true ? 'alert-primary' : 'alert-danger'">
-                <span th:text="${message}"></span>
+                <span th:utext="${message.replace('*', '<br/>')}"></span>
             </div>
         </div>
 

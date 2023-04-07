@@ -2,14 +2,20 @@ package hu.webuni.hr.alagi.service;
 
 import hu.webuni.hr.alagi.config.HrConfigProperties;
 import hu.webuni.hr.alagi.model.Employee;
+import hu.webuni.hr.alagi.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DefaultEmployeeService implements EmployeeService{
+public class DefaultEmployeeService extends AbstractEmployeeService {
 
    @Autowired
-   HrConfigProperties hrConfigProperties;
+   private HrConfigProperties hrConfigProperties;
+
+   public DefaultEmployeeService(EmployeeRepository employeeRepository) {
+      super(employeeRepository);
+   }
+
    @Override
    public int getPayRaisePercent(Employee employee) {
       return hrConfigProperties.getDef().getPercent();

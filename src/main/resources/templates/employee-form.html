@@ -15,7 +15,7 @@
 
         <div th:fragment="message-panel" class="col-md-4">
             <div th:if="${success!=null}" class="alert" role="alert" th:classappend="${success}==true ? 'alert-primary' : 'alert-danger'">
-                <span th:text="${message}"></span>
+                <span th:utext="${message.replace('*', '<br/>')}"></span>
             </div>
         </div>
 
@@ -26,21 +26,20 @@
 
     <form class="p-2" enctype="multipart/form-data" th:action="@{${action == 'new' ? '/employees/new' : '/employees/edit/{id}'}(id=${employee.id})}" method="post" th:object="${employee}">
         <div class="form-group row p-2">
-            <label for="id" class="col-sm-2 col-form-label">Id</label>
             <div class="col-sm-4">
-                <input type="hidden" class="form-control bg-dark bg-opacity-50" id="id" th:field="${employee.id}" readonly/>
+                <input type="hidden" class="form-control bg-dark bg-opacity-50" id="id" th:field="${employee.id}"/>
             </div>
         </div>
         <div class="form-group row p-2">
             <label for="firstName" class="col-sm-2 col-form-label">FirstName</label>
             <div class="col-sm-4">
-                <input type="text" class="form-control" id="firstName" th:field="${employee.firstName}" placeholder="FirstName" th:required="true"/>
+                <input type="text" class="form-control" id="firstName" th:field="${employee.firstName}" placeholder="FirstName"/>
             </div>
         </div>
         <div class="form-group row p-2">
             <label for="lastName" class="col-sm-2 col-form-label">LastName</label>
             <div class="col-sm-4">
-                <input type="text" class="form-control" id="lastName" th:field="${employee.lastName}" placeholder="LastName" th:required="true"/>
+                <input type="text" class="form-control" id="lastName" th:field="${employee.lastName}" placeholder="LastName"/>
             </div>
         </div>
         <div class="form-group row p-2">
@@ -59,7 +58,7 @@
         <div class="form-group row p-2">
             <label for="monthlySalary" class="col-sm-2 col-form-label">Monthly Salary</label>
             <div class="col-sm-4">
-                <input type="number" class="form-control" id="monthlySalary" th:field="${employee.monthlySalary}" th:min="0"/>
+                <input type="number" class="form-control" id="monthlySalary" th:field="${employee.monthlySalary}"/>
             </div>
         </div>
         <div class="form-group row p-2">

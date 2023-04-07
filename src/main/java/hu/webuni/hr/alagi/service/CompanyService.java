@@ -3,7 +3,6 @@ package hu.webuni.hr.alagi.service;
 import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.repository.CompanyRepository;
-import hu.webuni.hr.alagi.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,14 +10,12 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
-public class CompanyCrudService {
+public class CompanyService {
    private final CompanyRepository companyRepository;
-   private final EmployeeRepository employeeRepository;
 
    @Autowired
-   public CompanyCrudService(CompanyRepository companyRepository, EmployeeRepository employeeRepository) {
+   public CompanyService(CompanyRepository companyRepository) {
       this.companyRepository = companyRepository;
-      this.employeeRepository = employeeRepository;
    }
 
    public List<Company> getAllCompanies(boolean includeEmployeeList) {
@@ -52,9 +49,6 @@ public class CompanyCrudService {
       if (companyRepository.findById(company.getId())!=null) {
          return null;
       }
-      for (Employee e : company.getEmployeeList()) {
-         employeeRepository.save(e);
-      }
       return companyRepository.save(company);
    }
 
@@ -75,8 +69,7 @@ public class CompanyCrudService {
       if (company == null) {
          return null;
       }
-      Employee savedEmployee = employeeRepository.save(employee);
-      company.getEmployeeList().add(savedEmployee);
+      company.getEmployeeList().add(employee);
       return company;
    }
 
@@ -85,9 +78,7 @@ public class CompanyCrudService {
       if (company == null) {
          return null;
       }
-      Employee deletingEmployee = employeeRepository.findById(employeeId);
-      employeeRepository.delete(deletingEmployee);
-      company.getEmployeeList().remove(deletingEmployee);
+      company.getEmployeeList().remove(employeeId.intValue());
       return company;
    }
 
@@ -97,9 +88,17 @@ public class CompanyCrudService {
          return null;
       }
       company.setEmployeeList(employeeList);
-      for (Employee e : employeeList) {
-         employeeRepository.save(e);
-      }
       return company;
+   }
+
+   public boolean isEmployeeExistsInCompany(Long companyId, Long employeeId) {
+      Company company = companyRepository.findById(companyId);
+      Employee employee;
+      try {
+         employee = company.getEmployeeList().get(employeeId.intValue());
+      } catch (IndexOutOfBoundsException e) {
+         return false;
+      }
+      return employee != null;
    }
 }

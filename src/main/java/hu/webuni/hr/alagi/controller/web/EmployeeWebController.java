@@ -1,9 +1,11 @@
 package hu.webuni.hr.alagi.controller.web;
 
 import hu.webuni.hr.alagi.model.Employee;
-import hu.webuni.hr.alagi.service.EmployeeCrudService;
+import hu.webuni.hr.alagi.service.EmployeeService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -17,10 +19,10 @@ import java.util.Objects;
 @RequestMapping("/employees")
 public class EmployeeWebController {
 
-   private final EmployeeCrudService employeeCrudService;
+   private final EmployeeService employeeService;
 
-   public EmployeeWebController(EmployeeCrudService employeeCrudService) {
-      this.employeeCrudService = employeeCrudService;
+   public EmployeeWebController(EmployeeService employeeService) {
+      this.employeeService = employeeService;
    }
 
    @GetMapping
@@ -39,10 +41,10 @@ public class EmployeeWebController {
           if (Objects.equals(direction, "desc")) {
              c = c.reversed();
           }
-         List<Employee> orderedEmployeeList = employeeCrudService.getAllEmployees().stream().sorted(c).toList();
+         List<Employee> orderedEmployeeList = employeeService.getAllEmployees().stream().sorted(c).toList();
          model.put("employees", orderedEmployeeList);
       } else {
-         model.put("employees", employeeCrudService.getAllEmployees());
+         model.put("employees", employeeService.getAllEmployees());
       }
       return "employees";
    }
@@ -53,7 +55,7 @@ public class EmployeeWebController {
          Map<String, Object> model,
          final RedirectAttributes redirectAttributes) {
       model.put("action", "upd");
-      Employee updatingEmployee = employeeCrudService.getEmployeeById(id);
+      Employee updatingEmployee = employeeService.getEmployeeById(id);
       if(updatingEmployee!=null) {
          model.putIfAbsent("employee", updatingEmployee);
          return "employee-form";
@@ -75,45 +77,56 @@ public class EmployeeWebController {
    }
 
    @PostMapping("/new")
-   public String addNewEmployee(@ModelAttribute("employee") Employee employee, BindingResult result, RedirectAttributes redirectAttributes) {
-      String message;
-      boolean success;
+   public String addNewEmployee(
+         @ModelAttribute @Valid Employee employee,
+         BindingResult result,
+         RedirectAttributes redirectAttributes) {
       if (employee!=null && !result.hasErrors()) {
          if (employee.getStartDate()==null) {
             employee.setStartDate(LocalDateTime.now());
          }
-         employeeCrudService.createEmployee(employee);
-         message = "Employee added successfully";
-         success=true;
+         employeeService.createEmployee(employee);
+         redirectAttributes.addFlashAttribute("message", "Employee added successfully");
+         redirectAttributes.addFlashAttribute("success", true);
+         return "redirect:/employees";
       } else {
-         message = "Failed to add employee";
-         success=false;
+         StringBuilder sb = new StringBuilder("Failed to add employee:*");
+         for (FieldError f : result.getFieldErrors()) {
+            sb.append(f.getDefaultMessage()).append("*");
+         }
+         redirectAttributes.addFlashAttribute("message", sb.toString());
+         redirectAttributes.addFlashAttribute("success", false);
+         redirectAttributes.addFlashAttribute("employee", employee);
+         return "redirect:/employees/new";
       }
-      redirectAttributes.addFlashAttribute("message", message);
-      redirectAttributes.addFlashAttribute("success", success);
-      return "redirect:/employees";
    }
 
    @PostMapping("/edit/{id}")
    public String updateEmployee(
          @PathVariable Long id,
-         @ModelAttribute("employee") Employee employee,
+         @ModelAttribute @Valid Employee employee,
          BindingResult result,
          final RedirectAttributes redirectAttributes) {
 
       String view;
       if (result.hasErrors()) {
+         StringBuilder sb = new StringBuilder("Failed to update employee:*");
+         for (FieldError f : result.getFieldErrors()) {
+            sb.append(f.getDefaultMessage()).append("*");
+         }
          redirectAttributes.addFlashAttribute("success",false);
-         redirectAttributes.addFlashAttribute("message","Update failed!");
+         redirectAttributes.addFlashAttribute("message",sb.toString());
          redirectAttributes.addFlashAttribute("employee", employee);
          view = "redirect:/employees/edit/"+id;
       } else {
-         Employee modifiedEmployee = employeeCrudService.getEmployeeById(id);
-         if (modifiedEmployee!=null) {
-            modifiedEmployee.setId(id);
-            employeeCrudService.updateEmployee(modifiedEmployee);
+         if (employeeService.isEmployeeExistsById(id)) {
+            employee.setId(id);
+            if (employee.getStartDate()==null) {
+               employee.setStartDate(LocalDateTime.now());
+            }
+            employeeService.updateEmployee(employee);
             redirectAttributes.addFlashAttribute("success",true);
-            redirectAttributes.addFlashAttribute("message","Updated successfully: "+modifiedEmployee.getFullName());
+            redirectAttributes.addFlashAttribute("message","Updated successfully: "+employee.getFullName());
          } else {
             redirectAttributes.addFlashAttribute("success",false);
             redirectAttributes.addFlashAttribute("message","Employee not exists with id: "+id);
@@ -127,8 +140,8 @@ public class EmployeeWebController {
    public String deleteEmployee(
          @PathVariable Long id,
          RedirectAttributes redirectAttributes) {
-      if (employeeCrudService.isEmployeeExistsById(id)) {
-         employeeCrudService.deleteEmployee(id);
+      if (employeeService.isEmployeeExistsById(id)) {
+         employeeService.deleteEmployee(id);
          redirectAttributes.addFlashAttribute("success",true);
          redirectAttributes.addFlashAttribute("message","Deleted successfully!");
       } else {
