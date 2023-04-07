@@ -2,7 +2,7 @@ package hu.webuni.hr.alagi.controller.rest;
 
 import hu.webuni.hr.alagi.dto.CompanyDto;
 import hu.webuni.hr.alagi.dto.EmployeeDto;
-import hu.webuni.hr.alagi.exception.EntityAlreadyExistsException;
+import hu.webuni.hr.alagi.exception.EntityAlreadyExistsWithGivenIdException;
 import hu.webuni.hr.alagi.exception.EntityNotExistsWithGivenIdException;
 import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.model.Employee;
@@ -52,7 +52,7 @@ public class CompanyRestController {
    public CompanyDto addNewCompany(@RequestBody CompanyDto companyDto) {
       Company savedCompany = companyService.createCompany(companyMapper.dtoToCompany(companyDto));
       if (savedCompany==null) {
-         throw new EntityAlreadyExistsException(companyDto.getId(), Company.class);
+         throw new EntityAlreadyExistsWithGivenIdException(companyDto.getId(), Company.class);
       }
       return companyMapper.companyToDto(savedCompany);
    }
@@ -104,10 +104,11 @@ public class CompanyRestController {
    @PutMapping("/{companyId}/employees")
    public CompanyDto removeEmployeeListOfCompany(
          @PathVariable Long companyId,
-         @RequestBody @Valid List<Employee> newEmployeeList) {
+         @RequestBody @Valid List<EmployeeDto> newEmployeeDtoList) {
       if (!companyService.isCompanyExistsById(companyId)) {
          throw new EntityNotExistsWithGivenIdException(companyId, Company.class);
       }
+      List<Employee> newEmployeeList = employeeMapper.dtosToemployees(newEmployeeDtoList);
       Company updatedCompany = companyService.changeEmployeeListOfCompany(companyId, newEmployeeList);
       return companyMapper.companyToDto(updatedCompany);
    }

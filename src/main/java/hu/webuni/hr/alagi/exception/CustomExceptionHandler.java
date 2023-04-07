@@ -7,6 +7,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.List;
+
 @RestControllerAdvice
 public class CustomExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(CustomExceptionHandler.class);
@@ -14,18 +16,22 @@ public class CustomExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorEntity> handleValidationError(MethodArgumentNotValidException exception) {
         log.warn(exception.getMessage(), exception);
-
+        List<FieldErrorDto> fieldErrorDtoList =
+              exception.getBindingResult().getFieldErrors()
+                    .stream()
+                    .map(fieldError->new FieldErrorDto(fieldError.getField(), fieldError.getDefaultMessage(), fieldError.getRejectedValue()))
+                    .toList();
         return ResponseEntity.badRequest()
                 .body(new ValidationErrorEntity(
                         1000,
                         exception.getMessage(),
-                        exception.getBindingResult().getFieldErrors()
+                        fieldErrorDtoList
                         )
                 );
     }
 
-   @ExceptionHandler(EntityAlreadyExistsException.class)
-   public ResponseEntity<DefaultErrorEntity> handleEmployeeIsAlreadyExistsException(EntityAlreadyExistsException exception) {
+   @ExceptionHandler(EntityAlreadyExistsWithGivenIdException.class)
+   public ResponseEntity<DefaultErrorEntity> handleEmployeeIsAlreadyExistsException(EntityAlreadyExistsWithGivenIdException exception) {
       log.warn(exception.getMessage(), exception);
 
       return ResponseEntity.badRequest()

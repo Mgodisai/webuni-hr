@@ -1,7 +1,7 @@
 package hu.webuni.hr.alagi.controller.rest;
 
 import hu.webuni.hr.alagi.dto.EmployeeDto;
-import hu.webuni.hr.alagi.exception.EntityAlreadyExistsException;
+import hu.webuni.hr.alagi.exception.EntityAlreadyExistsWithGivenIdException;
 import hu.webuni.hr.alagi.exception.EntityNotExistsWithGivenIdException;
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.service.EmployeeService;
@@ -52,7 +52,7 @@ public class EmployeeRestController {
    public EmployeeDto addNewEmployee(@RequestBody @Valid EmployeeDto employeeDto) {
       Employee savedEmployee = employeeService.createEmployee(employeeMapper.dtoToEmployee(employeeDto));
       if (savedEmployee==null) {
-         throw new EntityAlreadyExistsException(employeeDto.getId(), Employee.class);
+         throw new EntityAlreadyExistsWithGivenIdException(employeeDto.getId(), Employee.class);
       }
       return employeeMapper.employeeToDto(savedEmployee);
    }
