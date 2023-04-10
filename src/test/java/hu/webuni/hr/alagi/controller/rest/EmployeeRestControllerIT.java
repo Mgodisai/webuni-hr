@@ -82,7 +82,7 @@ public class EmployeeRestControllerIT {
 
    @Test
    public void testAddNewValidEmployeeDto() {
-      EmployeeDto newEmployee = new EmployeeDto(11L, "First", "Last", Position.DEVELOPER, 10, LocalDateTime.now());
+      EmployeeDto newEmployee = new EmployeeDto(11L, "First", "Last", Position.DEVELOPER, 10, LocalDateTime.now(), null);
       webTestClient.post()
             .uri(BASE_URI)
             .contentType(MediaType.APPLICATION_JSON)
@@ -94,7 +94,7 @@ public class EmployeeRestControllerIT {
 
    @Test
    public void testAddNewValidEmployeeDtoWithExistingIdUsingPost() {
-      EmployeeDto newEmployee = new EmployeeDto(2L, "First", "Last", Position.DEVELOPER, 10, LocalDateTime.now());
+      EmployeeDto newEmployee = new EmployeeDto(2L, "First", "Last", Position.DEVELOPER, 10, LocalDateTime.now(), null);
       webTestClient.post()
             .uri(BASE_URI)
             .contentType(MediaType.APPLICATION_JSON)
@@ -115,7 +115,7 @@ public class EmployeeRestControllerIT {
    @Test
    public void testUpdateValidEmployeeById() {
       Long testEmployeeId = 4L;
-      EmployeeDto employeeDtoBefore = new EmployeeDto(11L, "First", "Last", Position.DEVELOPER, 10, LocalDateTime.now());
+      EmployeeDto employeeDtoBefore = new EmployeeDto(11L, "First", "Last", Position.DEVELOPER, 10, LocalDateTime.now(), null);
 
       webTestClient.put()
             .uri(BASE_URI+"/{id}", testEmployeeId)
@@ -133,31 +133,31 @@ public class EmployeeRestControllerIT {
 
    @Test
    public void testAddNewEmployeeDtoWithInvalidSalary() {
-      EmployeeDto newEmployee = new EmployeeDto(11L, "First", "Last", Position.DEVELOPER, -10, LocalDateTime.now());
+      EmployeeDto newEmployee = new EmployeeDto(11L, "First", "Last", Position.DEVELOPER, -10, LocalDateTime.now(), null);
       EmployeeDtoValidationTestWithOneInvalidField(newEmployee, "monthlySalary", newEmployee.getMonthlySalary());
    }
 
    @Test
    public void testAddNewEmployeeDtoWithEmptyFirstName() {
-      EmployeeDto newEmployee = new EmployeeDto(11L, "", "Last", Position.DEVELOPER, 10, LocalDateTime.now());
+      EmployeeDto newEmployee = new EmployeeDto(11L, "", "Last", Position.DEVELOPER, 10, LocalDateTime.now(), null);
       EmployeeDtoValidationTestWithOneInvalidField(newEmployee, "firstName", newEmployee.getFirstName());
    }
 
    @Test
    public void testAddNewEmployeeDtoWithEmptyLastName() {
-      EmployeeDto newEmployee = new EmployeeDto(11L, "First", "", Position.DEVELOPER, 10, LocalDateTime.now());
+      EmployeeDto newEmployee = new EmployeeDto(11L, "First", "", Position.DEVELOPER, 10, LocalDateTime.now(), null);
       EmployeeDtoValidationTestWithOneInvalidField(newEmployee, "lastName", newEmployee.getLastName());
    }
 
    @Test
    public void testAddNewEmployeeDtoWithNullLastName() {
-      EmployeeDto newEmployee = new EmployeeDto(11L, "First", null, Position.DEVELOPER, 10, LocalDateTime.now());
+      EmployeeDto newEmployee = new EmployeeDto(11L, "First", null, Position.DEVELOPER, 10, LocalDateTime.now(), null);
       EmployeeDtoValidationTestWithOneInvalidField(newEmployee, "lastName", newEmployee.getLastName());
    }
 
    @Test
    public void testAddNewEmployeeDtoWithWrongDate() {
-      EmployeeDto newEmployee = new EmployeeDto(11L, "First", "Last", Position.DEVELOPER, 10, LocalDateTime.now().plusHours(1).truncatedTo(ChronoUnit.SECONDS));
+      EmployeeDto newEmployee = new EmployeeDto(11L, "First", "Last", Position.DEVELOPER, 10, LocalDateTime.now().plusHours(1).truncatedTo(ChronoUnit.SECONDS), null);
       EmployeeDtoValidationTestWithOneInvalidField(newEmployee, "startDate", newEmployee.getStartDate().toString());
    }
 

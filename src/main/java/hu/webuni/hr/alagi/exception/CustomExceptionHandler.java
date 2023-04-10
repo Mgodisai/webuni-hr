@@ -53,4 +53,16 @@ public class CustomExceptionHandler {
                   )
             );
    }
+
+   @ExceptionHandler(EmployeeNotBelongsToTheGivenCompanyException.class)
+   public ResponseEntity<DefaultErrorEntity> handleEmployeeNotBelongsToTheGivenCompanyException(EmployeeNotBelongsToTheGivenCompanyException exception) {
+      log.warn(exception.getMessage(), exception);
+
+      return ResponseEntity.badRequest()
+            .body(new DefaultErrorEntity(
+                        1003,
+                        exception.getMessage()
+                  )
+            );
+   }
 }

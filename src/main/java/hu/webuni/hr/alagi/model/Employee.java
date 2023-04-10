@@ -1,18 +1,25 @@
 package hu.webuni.hr.alagi.model;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
+@Entity
 public class Employee {
+   @Id
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
    @NotEmpty
    private String firstName;
    @NotEmpty
    private String lastName;
+   @NotNull
+   @Enumerated(value=EnumType.STRING)
    private Position position;
    @Positive
    private int monthlySalary;
@@ -20,21 +27,27 @@ public class Employee {
    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
    private LocalDateTime startDate;
 
-   public Employee(Long id, String firstName, String lastName, Position position, int monthlySalary, LocalDateTime startDate) {
+   @ManyToOne(fetch=FetchType.LAZY, cascade = CascadeType.ALL)
+   @JoinColumn(name="company_id")
+   private Company company;
+
+   public Employee(Long id, String firstName, String lastName, Position position, int monthlySalary, LocalDateTime startDate, Company company) {
       this.id = id;
       this.firstName = firstName;
       this.lastName = lastName;
       this.position = position;
       this.monthlySalary = monthlySalary;
       this.startDate = startDate;
+      this.company = company;
    }
 
-   public Employee(String firstName, String lastName, Position position, int monthlySalary, LocalDateTime startDate) {
+   public Employee(String firstName, String lastName, Position position, int monthlySalary, LocalDateTime startDate, Company company) {
       this.firstName = firstName;
       this.lastName = lastName;
       this.position = position;
       this.monthlySalary = monthlySalary;
       this.startDate = startDate;
+      this.company = company;
    }
 
    public Employee() {
@@ -90,6 +103,14 @@ public class Employee {
 
    public void setStartDate(LocalDateTime startDate) {
       this.startDate = startDate;
+   }
+
+   public Company getCompany() {
+      return company;
+   }
+
+   public void setCompany(Company company) {
+      this.company = company;
    }
 
    @Override

@@ -2,17 +2,20 @@ package hu.webuni.hr.alagi.controller.rest;
 
 import hu.webuni.hr.alagi.dto.CompanyDto;
 import hu.webuni.hr.alagi.dto.EmployeeDto;
+import hu.webuni.hr.alagi.exception.EmployeeNotBelongsToTheGivenCompanyException;
 import hu.webuni.hr.alagi.exception.EntityAlreadyExistsWithGivenIdException;
 import hu.webuni.hr.alagi.exception.EntityNotExistsWithGivenIdException;
 import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.service.CompanyService;
+import hu.webuni.hr.alagi.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -21,12 +24,14 @@ public class CompanyRestController {
    private final CompanyService companyService;
    private final CompanyMapper companyMapper;
    private final EmployeeMapper employeeMapper;
+   private final EmployeeService employeeService;
 
    @Autowired
-   public CompanyRestController(CompanyService companyService, CompanyMapper companyMapper, EmployeeMapper employeeMapper) {
+   public CompanyRestController(CompanyService companyService, CompanyMapper companyMapper, EmployeeMapper employeeMapper, EmployeeService employeeService) {
       this.companyService = companyService;
       this.companyMapper = companyMapper;
       this.employeeMapper = employeeMapper;
+      this.employeeService = employeeService;
    }
 
    @GetMapping
@@ -50,27 +55,39 @@ public class CompanyRestController {
 
    @PostMapping
    public CompanyDto addNewCompany(@RequestBody CompanyDto companyDto) {
-      Company savedCompany = companyService.createCompany(companyMapper.dtoToCompany(companyDto));
-      if (savedCompany==null) {
-         throw new EntityAlreadyExistsWithGivenIdException(companyDto.getId(), Company.class);
+      Company savedCompany = companyService.createCompany(companyMapper.dtoToCompany(companyDto))
+            .orElseThrow(()->new EntityAlreadyExistsWithGivenIdException(companyDto.getId(), Company.class));
+
+      if (savedCompany.getEmployeeList() != null) {
+         savedCompany.getEmployeeList().forEach(e -> {
+            e.setCompany(savedCompany);
+            employeeService.createEmployee(e);
+         });
       }
+
       return companyMapper.companyToDto(savedCompany);
    }
 
    @PutMapping("/{companyId}")
    public CompanyDto updateCompanyById(@PathVariable Long companyId, @RequestBody CompanyDto companyDto) {
-      if (companyService.isCompanyExistsById(companyId)) {
-         companyDto.setId(companyId);
-         Company updatedCompany = companyService.updateCompany(companyMapper.dtoToCompany(companyDto));
-         return companyMapper.companyToDto(updatedCompany);
-      } else {
-         throw new EntityNotExistsWithGivenIdException(companyId, Company.class);
+      Company modifyingCompanyBefore = companyMapper.dtoToCompany(companyDto);
+      modifyingCompanyBefore.setId(companyId);
+
+      Company modifyingCompanyAfter = companyService.updateCompany(companyMapper.dtoToCompany(companyDto))
+            .orElseThrow(()-> new EntityNotExistsWithGivenIdException(companyId, Company.class));
+
+      if (modifyingCompanyAfter.getEmployeeList() != null) {
+         modifyingCompanyAfter.getEmployeeList().forEach(e->{
+            e.setCompany(modifyingCompanyAfter);
+            employeeService.updateEmployee(e);
+         });
       }
+      return companyMapper.companyToDto(modifyingCompanyAfter);
    }
 
    @DeleteMapping("/{companyId}")
-   public ResponseEntity<Void> deleteEmployeeById(@PathVariable Long companyId) {
-      if (companyService.isCompanyExistsById(companyId)) {
+   public ResponseEntity<Void> deleteCompanyById(@PathVariable Long companyId) {
+      if (companyService.isCompanyExistedByGivenId(companyId)) {
          companyService.deleteCompany(companyId);
          return ResponseEntity.noContent().build();
       } else {
@@ -79,37 +96,49 @@ public class CompanyRestController {
    }
 
    @PostMapping("/{companyId}/employees")
-   public CompanyDto addNewEmployeeToCompany(@PathVariable Long companyId, @RequestBody @Valid EmployeeDto newEmployee) {
-      if (!companyService.isCompanyExistsById(companyId)) {
-         throw new EntityNotExistsWithGivenIdException(companyId, Company.class);
-      }
-      Company updatedCompany = companyService.addEmployeeToCompany(companyId, employeeMapper.dtoToEmployee(newEmployee));
-      return companyMapper.companyToDto(updatedCompany);
+   public CompanyDto addNewEmployeesToCompany(@PathVariable Long companyId, @RequestBody @Valid List<EmployeeDto> newEmployeeDtos) {
+      Optional<Company> updatedCompany = companyService.addEmployeesToCompany(companyId, employeeMapper.dtosToemployees(newEmployeeDtos));
+
+      return companyMapper.companyToDto(updatedCompany.orElseThrow(()->new EntityNotExistsWithGivenIdException(companyId, Company.class)));
    }
 
    @DeleteMapping("/{companyId}/employees/{employeeId}")
    public CompanyDto removeEmployeeToCompanyByEmployeeId(
          @PathVariable Long companyId,
          @PathVariable Long employeeId) {
-      if (!companyService.isCompanyExistsById(companyId)) {
+      if (!companyService.isCompanyExistedByGivenId(companyId)) {
          throw new EntityNotExistsWithGivenIdException(companyId, Company.class);
       }
-      if (!companyService.isEmployeeExistsInCompany(companyId, employeeId)) {
+      Optional<Employee> employee = employeeService.getEmployeeById(employeeId);
+      if (employee.isEmpty()) {
          throw new EntityNotExistsWithGivenIdException(employeeId, Employee.class);
       }
-      Company updatingCompany = companyService.removeEmployeeByIdFromCompany(companyId, employeeId);
-      return companyMapper.companyToDto(updatingCompany);
+      if (Objects.equals(employee.get().getCompany().getId(), companyId)) {
+         employee.get().setCompany(null);
+         employeeService.deleteEmployee(employeeId);
+      } else {
+         throw new EmployeeNotBelongsToTheGivenCompanyException(employeeId, companyId);
+      }
+      return companyMapper.companyToDto(companyService.getCompanyById(companyId, true));
    }
 
    @PutMapping("/{companyId}/employees")
-   public CompanyDto removeEmployeeListOfCompany(
+   public CompanyDto updateEmployeesOfCompany(
          @PathVariable Long companyId,
-         @RequestBody @Valid List<EmployeeDto> newEmployeeDtoList) {
-      if (!companyService.isCompanyExistsById(companyId)) {
+         @RequestBody @Valid List<EmployeeDto> updatingEmployeeDtoList) {
+      if (!companyService.isCompanyExistedByGivenId(companyId)) {
          throw new EntityNotExistsWithGivenIdException(companyId, Company.class);
       }
-      List<Employee> newEmployeeList = employeeMapper.dtosToemployees(newEmployeeDtoList);
-      Company updatedCompany = companyService.changeEmployeeListOfCompany(companyId, newEmployeeList);
-      return companyMapper.companyToDto(updatedCompany);
+      List<Employee> updatingEmployeeList = employeeMapper.dtosToemployees(updatingEmployeeDtoList);
+      Company company = companyService.getCompanyById(companyId, false);
+
+      if (updatingEmployeeList != null) {
+         updatingEmployeeList.forEach(e->{
+            e.setCompany(company);
+            employeeService.updateEmployee(e);
+         });
+      }
+
+      return companyMapper.companyToDto(companyService.getCompanyById(companyId, true));
    }
 }

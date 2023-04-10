@@ -8,14 +8,17 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CompanyService {
    private final CompanyRepository companyRepository;
+   private final EmployeeService employeeService;
 
    @Autowired
-   public CompanyService(CompanyRepository companyRepository) {
+   public CompanyService(CompanyRepository companyRepository, EmployeeService employeeService) {
       this.companyRepository = companyRepository;
+      this.employeeService = employeeService;
    }
 
    public List<Company> getAllCompanies(boolean includeEmployeeList) {
@@ -30,75 +33,82 @@ public class CompanyService {
    }
 
    public Company getCompanyById(Long id, boolean includeEmployeeList) {
-      Company origCompanyDto = companyRepository.findById(id);
-      if (origCompanyDto==null) {
+      Company company = companyRepository.findById(id).orElse(null);
+      if (company==null) {
          return null;
       }
       if (!includeEmployeeList) {
          return new Company(
-               origCompanyDto.getId(),
-               origCompanyDto.getRegisterNumber(),
-               origCompanyDto.getName(),
-               origCompanyDto.getAddress(),
+               company.getId(),
+               company.getRegisterNumber(),
+               company.getName(),
+               company.getAddress(),
                Collections.emptyList());
       }
-      return origCompanyDto;
+      return company;
    }
 
-   public Company createCompany(Company company) {
-      if (companyRepository.findById(company.getId())!=null) {
-         return null;
+   public Optional<Company> createCompany(Company company) {
+      if (company.getId()!=null && isCompanyExistedByGivenId(company.getId())) {
+         return Optional.empty();
+      } else {
+         return Optional.of(companyRepository.save(company));
       }
-      return companyRepository.save(company);
    }
 
-   public boolean isCompanyExistsById(Long id) {
-      return companyRepository.findById(id)!=null;
+   public boolean isCompanyExistedByGivenId(Long id) {
+      return companyRepository.existsById(id);
    }
 
-   public Company updateCompany(Company company) {
-      return companyRepository.save(company);
+   public Optional<Company> updateCompany(Company company) {
+      if (company.getId()==null || !isCompanyExistedByGivenId(company.getId())) {
+         return Optional.empty();
+      } else {
+         return Optional.of(companyRepository.save(company));
+      }
    }
 
    public void deleteCompany(Long id) {
       companyRepository.deleteById(id);
    }
 
-   public Company addEmployeeToCompany(Long companyId, Employee employee) {
-      Company company = companyRepository.findById(companyId);
-      if (company == null) {
-         return null;
+   public Optional<Company> addEmployeesToCompany(Long companyId, List<Employee> employeeList) {
+      Optional<Company> company = companyRepository.findById(companyId);
+      if (company.isPresent()) {
+         for (Employee e : employeeList) {
+            e.setCompany(company.get());
+            employeeService.createEmployee(e);
+         }
       }
-      company.getEmployeeList().add(employee);
       return company;
    }
 
-   public Company removeEmployeeByIdFromCompany(Long companyId, Long employeeId) {
-      Company company = companyRepository.findById(companyId);
-      if (company == null) {
-         return null;
-      }
-      company.getEmployeeList().remove(employeeId.intValue());
-      return company;
-   }
-
-   public Company changeEmployeeListOfCompany(Long companyId, List<Employee> employeeList) {
-      Company company = companyRepository.findById(companyId);
-      if (company == null) {
-         return null;
-      }
-      company.setEmployeeList(employeeList);
-      return company;
-   }
-
-   public boolean isEmployeeExistsInCompany(Long companyId, Long employeeId) {
-      Company company = companyRepository.findById(companyId);
-      Employee employee;
-      try {
-         employee = company.getEmployeeList().get(employeeId.intValue());
-      } catch (IndexOutOfBoundsException e) {
-         return false;
-      }
-      return employee != null;
-   }
+//   public Company removeEmployeeByIdFromCompany(Long companyId, Long employeeId) {
+//      Company company = companyRepository.findById(companyId);
+//      if (company == null) {
+//         return null;
+//      }
+//      company.getEmployeeList().remove(employeeId.intValue());
+//      return company;
+//   }
+//
+//   public Company changeEmployeeListOfCompany(Long companyId, List<Employee> employeeList) {
+//      Company company = companyRepository.findById(companyId);
+//      if (company == null) {
+//         return null;
+//      }
+//      company.setEmployeeList(employeeList);
+//      return company;
+//   }
+//
+//   public boolean isEmployeeExistsInCompany(Long companyId, Long employeeId) {
+//      Company company = companyRepository.findById(companyId);
+//      Employee employee;
+//      try {
+//         employee = company.getEmployeeList().get(employeeId.intValue());
+//      } catch (IndexOutOfBoundsException e) {
+//         return false;
+//      }
+//      return employee != null;
+//   }
 }

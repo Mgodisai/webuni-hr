@@ -3,6 +3,14 @@ spring:
     active: smart
   thymeleaf:
     cache: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hr
+    username: user
+    password: userpass
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
 
 hr:
   raise:

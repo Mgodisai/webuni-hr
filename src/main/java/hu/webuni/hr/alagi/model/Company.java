@@ -1,15 +1,21 @@
 package hu.webuni.hr.alagi.model;
 
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
 public class Company {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String registerNumber;
     private String name;
     private String address;
-    private List<Employee> employeeList;
 
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
+    private List<Employee> employeeList = new ArrayList<>();
 
     public Company(Long id, String registerNumber, String name, String address, List<Employee> employeeList) {
         this.id = id;
@@ -17,6 +23,10 @@ public class Company {
         this.name = name;
         this.address = address;
         this.employeeList = employeeList;
+    }
+
+    public Company() {
+
     }
 
     public Long getId() {
@@ -57,12 +67,5 @@ public class Company {
 
     public void setEmployeeList(List<Employee> employeeList) {
         this.employeeList = employeeList;
-    }
-
-    public void addEmployee(Employee employee) {
-        if (employeeList == null) {
-            employeeList = new ArrayList<>();
-        }
-        employeeList.add(employee);
     }
 }

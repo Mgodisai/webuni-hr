@@ -10,10 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Controller
 @RequestMapping("/employees")
@@ -55,8 +52,8 @@ public class EmployeeWebController {
          Map<String, Object> model,
          final RedirectAttributes redirectAttributes) {
       model.put("action", "upd");
-      Employee updatingEmployee = employeeService.getEmployeeById(id);
-      if(updatingEmployee!=null) {
+      Optional<Employee> updatingEmployee = employeeService.getEmployeeById(id);
+      if(updatingEmployee.isPresent()) {
          model.putIfAbsent("employee", updatingEmployee);
          return "employee-form";
       } else {
@@ -119,7 +116,7 @@ public class EmployeeWebController {
          redirectAttributes.addFlashAttribute("employee", employee);
          view = "redirect:/employees/edit/"+id;
       } else {
-         if (employeeService.isEmployeeExistsById(id)) {
+         if (employeeService.isEmployeeExistedByGivenId(id)) {
             employee.setId(id);
             if (employee.getStartDate()==null) {
                employee.setStartDate(LocalDateTime.now());
@@ -140,7 +137,7 @@ public class EmployeeWebController {
    public String deleteEmployee(
          @PathVariable Long id,
          RedirectAttributes redirectAttributes) {
-      if (employeeService.isEmployeeExistsById(id)) {
+      if (employeeService.isEmployeeExistedByGivenId(id)) {
          employeeService.deleteEmployee(id);
          redirectAttributes.addFlashAttribute("success",true);
          redirectAttributes.addFlashAttribute("message","Deleted successfully!");

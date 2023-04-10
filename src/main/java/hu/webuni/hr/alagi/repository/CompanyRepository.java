@@ -1,9 +1,10 @@
 package hu.webuni.hr.alagi.repository;
 
 import hu.webuni.hr.alagi.model.Company;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CompanyRepository extends MyCrudLikeRepository<Company, Long> {
+public interface CompanyRepository extends JpaRepository<Company, Long> {
 
 }
