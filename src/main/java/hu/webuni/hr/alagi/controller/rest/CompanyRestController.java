@@ -141,4 +141,14 @@ public class CompanyRestController {
 
       return companyMapper.companyToDto(companyService.getCompanyById(companyId, true));
    }
+
+   @GetMapping("/custom-queries")
+   public List<CompanyDto> getCompaniesWithEmployeeSalaryGreaterThan(@RequestParam("salary") int salary) {
+      return companyMapper.companiesToDtos(companyService.findByEmployeeWithSalaryGreaterThan(salary));
+   }
+
+   @GetMapping("/custom-queries")
+   public List<CompanyDto> getCompaniesWithEmployeeCountGreaterThan(@RequestParam("limit") int limit) {
+      return companyMapper.companiesToDtos(companyService.findByNumberOfEmployeesGreaterThan(limit));
+   }
 }

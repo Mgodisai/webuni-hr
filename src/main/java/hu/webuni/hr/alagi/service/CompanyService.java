@@ -83,6 +83,14 @@ public class CompanyService {
       return company;
    }
 
+   public List<Company> findByEmployeeWithSalaryGreaterThan(int salary) {
+      return companyRepository.findByEmployeeWithSalaryGreaterThan(salary);
+   }
+
+   public List<Company> findByNumberOfEmployeesGreaterThan(int limit) {
+      return companyRepository.findByNumberOfEmployeesGreaterThan(limit);
+   }
+
 //   public Company removeEmployeeByIdFromCompany(Long companyId, Long employeeId) {
 //      Company company = companyRepository.findById(companyId);
 //      if (company == null) {
