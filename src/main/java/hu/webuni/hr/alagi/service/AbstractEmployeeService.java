@@ -7,13 +7,15 @@ import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public abstract class AbstractEmployeeService implements EmployeeService {
 
    private final EmployeeRepository employeeRepository;
 
-   public AbstractEmployeeService(EmployeeRepository employeeRepository) {
+   protected AbstractEmployeeService(EmployeeRepository employeeRepository) {
       this.employeeRepository = employeeRepository;
    }
 
@@ -78,5 +80,15 @@ public abstract class AbstractEmployeeService implements EmployeeService {
    @Transactional
    public void deleteEmployee(Long id) {
       employeeRepository.deleteById(id);
+   }
+
+   public Map<Position, Double> getAvgSalariesByPositionUsingCompanyId(Long companyId) {
+
+      List<Object[]> results = employeeRepository.getAvgSalariesByPositionUsingCompanyId(companyId);
+      return results.stream()
+              .collect(Collectors.toMap(
+                      row -> (Position) row[0],
+                      row -> (Double) row[1]
+              ));
    }
 }

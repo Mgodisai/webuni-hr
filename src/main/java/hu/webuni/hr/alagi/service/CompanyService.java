@@ -26,7 +26,7 @@ public class CompanyService {
          List<Company> list = companyRepository.findAll();
          return list
                .stream()
-               .map(c->new Company(c.getId(), c.getRegisterNumber(), c.getName(), c.getAddress(), Collections.emptyList()))
+               .map(c->new Company(c.getId(), c.getCompanyType(), c.getRegisterNumber(), c.getName(), c.getAddress(), Collections.emptyList()))
                .toList();
       }
       return companyRepository.findAll();
@@ -40,7 +40,7 @@ public class CompanyService {
       if (!includeEmployeeList) {
          return new Company(
                company.getId(),
-               company.getRegisterNumber(),
+                 company.getCompanyType(), company.getRegisterNumber(),
                company.getName(),
                company.getAddress(),
                Collections.emptyList());

@@ -5,6 +5,7 @@ import hu.webuni.hr.alagi.model.Position;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface EmployeeService {
@@ -20,4 +21,5 @@ public interface EmployeeService {
    Optional<Employee> updateEmployee(Employee employee);
    void deleteEmployee(Long id);
    int getPayRaisePercent(Employee employee);
+   Map<Position, Double> getAvgSalariesByPositionUsingCompanyId(Long companyId);
 }

@@ -30,4 +30,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
    )
    List<Employee> filterEmployees(Position position, Integer minSalary, String firstNameStartsWith, LocalDateTime startt, LocalDateTime endd);
 
+   @Query("SELECT e.position, AVG(e.monthlySalary) " +
+           "FROM Employee e " +
+           "WHERE e.company.id = :companyId " +
+           "GROUP BY e.position "+
+           "ORDER BY AVG(e.monthlySalary) DESC")
+   List<Object[]> getAvgSalariesByPositionUsingCompanyId(Long companyId);
 }

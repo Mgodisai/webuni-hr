@@ -10,6 +10,8 @@ public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Enumerated(EnumType.STRING)
+    private CompanyType companyType;
     private String registerNumber;
     private String name;
     private String address;
@@ -17,8 +19,9 @@ public class Company {
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
     private List<Employee> employeeList = new ArrayList<>();
 
-    public Company(Long id, String registerNumber, String name, String address, List<Employee> employeeList) {
+    public Company(Long id, CompanyType companyType, String registerNumber, String name, String address, List<Employee> employeeList) {
         this.id = id;
+        this.companyType = companyType;
         this.registerNumber = registerNumber;
         this.name = name;
         this.address = address;
@@ -67,5 +70,13 @@ public class Company {
 
     public void setEmployeeList(List<Employee> employeeList) {
         this.employeeList = employeeList;
+    }
+
+    public CompanyType getCompanyType() {
+        return companyType;
+    }
+
+    public void setCompanyType(CompanyType companyType) {
+        this.companyType = companyType;
     }
 }

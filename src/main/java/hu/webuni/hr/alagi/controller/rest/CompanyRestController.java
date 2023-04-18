@@ -7,6 +7,7 @@ import hu.webuni.hr.alagi.exception.EntityAlreadyExistsWithGivenIdException;
 import hu.webuni.hr.alagi.exception.EntityNotExistsWithGivenIdException;
 import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.model.Employee;
+import hu.webuni.hr.alagi.model.Position;
 import hu.webuni.hr.alagi.service.CompanyService;
 import hu.webuni.hr.alagi.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -154,5 +156,12 @@ public class CompanyRestController {
          return companyMapper.companiesToDtos(companyService.findByNumberOfEmployeesGreaterThan(limit.get()));
       }
       return companyMapper.companiesToDtos(companyService.getAllCompanies(false));
+   }
+
+   @GetMapping("/{companyId}/avgSalariesByPosition")
+   public Map<Position, Double> getCompaniesWithEmployeeSalaryGreaterThan(
+           @PathVariable Long companyId
+   ) {
+      return employeeService.getAvgSalariesByPositionUsingCompanyId(companyId);
    }
 }

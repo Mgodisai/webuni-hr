@@ -1,6 +1,7 @@
 package hu.webuni.hr.alagi.service;
 
 import hu.webuni.hr.alagi.model.Company;
+import hu.webuni.hr.alagi.model.CompanyType;
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.model.Position;
 import hu.webuni.hr.alagi.repository.CompanyRepository;
@@ -31,8 +32,8 @@ public class InitDbService {
 
     @Transactional
     public void insertTestData() {
-        Company companyA = new Company(null, "123", "Company A", "7400 Kaposvár, Fő u. 2", null);
-        Company companyB = new Company(null, "456", "Company B", "7400 Kaposvár, Fő u. 1", null);
+        Company companyA = new Company(null, CompanyType.BT, "123", "A Bt.", "7400 Kaposvár, Fő u. 2", null);
+        Company companyB = new Company(null, CompanyType.KFT, "456", "B Kft.", "7400 Kaposvár, Fő u. 1", null);
 
         Employee employee1 = new Employee(null, "Gyula", "Kis", Position.DEVELOPER, 4000, LocalDateTime.now(), companyA);
         Employee employee2 = new Employee(null, "Géza", "Nagy", Position.ADMINISTRATOR, 6000, LocalDateTime.now(), companyA);
