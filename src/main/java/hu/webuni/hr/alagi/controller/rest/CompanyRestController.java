@@ -143,12 +143,16 @@ public class CompanyRestController {
    }
 
    @GetMapping("/custom-queries")
-   public List<CompanyDto> getCompaniesWithEmployeeSalaryGreaterThan(@RequestParam("salary") int salary) {
-      return companyMapper.companiesToDtos(companyService.findByEmployeeWithSalaryGreaterThan(salary));
-   }
-
-   @GetMapping("/custom-queries")
-   public List<CompanyDto> getCompaniesWithEmployeeCountGreaterThan(@RequestParam("limit") int limit) {
-      return companyMapper.companiesToDtos(companyService.findByNumberOfEmployeesGreaterThan(limit));
+   public List<CompanyDto> getCompaniesWithEmployeeSalaryGreaterThan(
+         @RequestParam(value = "salary", required = false) Optional<Integer> salary,
+         @RequestParam(value = "limit", required = false) Optional<Integer> limit
+   ) {
+      if (salary.isPresent()) {
+         return companyMapper.companiesToDtos(companyService.findByEmployeeWithSalaryGreaterThan(salary.get()));
+      }
+      if (limit.isPresent()) {
+         return companyMapper.companiesToDtos(companyService.findByNumberOfEmployeesGreaterThan(limit.get()));
+      }
+      return companyMapper.companiesToDtos(companyService.getAllCompanies(false));
    }
 }

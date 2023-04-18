@@ -31,17 +31,14 @@ public class InitDbService {
 
     @Transactional
     public void insertTestData() {
-        // Create companies
-        Company companyA = new Company(null, "123", "Company A", "123 Main St", null);
-        Company companyB = new Company(null, "456", "Company B", "456 Second St", null);
+        Company companyA = new Company(null, "123", "Company A", "7400 Kaposvár, Fő u. 2", null);
+        Company companyB = new Company(null, "456", "Company B", "7400 Kaposvár, Fő u. 1", null);
 
-        // Create employees
-        Employee employee1 = new Employee("John", "Doe", Position.DEVELOPER, 4000, LocalDateTime.now(), companyA);
-        Employee employee2 = new Employee("Jane", "Doe", Position.ADMINISTRATOR, 6000, LocalDateTime.now(), companyA);
-        Employee employee3 = new Employee("Bob", "Smith", Position.DEVELOPER, 4500, LocalDateTime.now(), companyB);
-        Employee employee4 = new Employee("Alice", "Johnson", Position.CEO, 15500, LocalDateTime.now(), companyB);
+        Employee employee1 = new Employee(null, "Gyula", "Kis", Position.DEVELOPER, 4000, LocalDateTime.now(), companyA);
+        Employee employee2 = new Employee(null, "Géza", "Nagy", Position.ADMINISTRATOR, 6000, LocalDateTime.now(), companyA);
+        Employee employee3 = new Employee(null, "Pál", "Kovács", Position.DEVELOPER, 4500, LocalDateTime.now(), companyA);
+        Employee employee4 = new Employee(null, "Mária", "Tóth", Position.CEO, 15500, LocalDateTime.now(), companyB);
 
-        // Save companies and employees
         companyRepository.saveAll(Arrays.asList(companyA, companyB));
         employeeRepository.saveAll(Arrays.asList(employee1, employee2, employee3, employee4));
     }
