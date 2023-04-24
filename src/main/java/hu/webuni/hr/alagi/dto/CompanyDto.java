@@ -9,13 +9,13 @@ import java.util.List;
 public class CompanyDto {
    private Long id;
    private String registerNumber;
-   private CompanyType companyType;
+   private String companyType;
    private String name;
    private String address;
    @JsonManagedReference
    private List<EmployeeDto> employeeDtoList;
 
-   public CompanyDto(Long id, String registerNumber, CompanyType companyType, String name, String address, List<EmployeeDto> employeeDtoList) {
+   public CompanyDto(Long id, String registerNumber, String companyType, String name, String address, List<EmployeeDto> employeeDtoList) {
       this.id = id;
       this.registerNumber = registerNumber;
       this.companyType = companyType;
@@ -71,11 +71,11 @@ public class CompanyDto {
       employeeDtoList.add(employeeDto);
    }
 
-   public CompanyType getCompanyType() {
+   public String getCompanyType() {
       return companyType;
    }
 
-   public void setCompanyType(CompanyType companyType) {
+   public void setCompanyType(String companyType) {
       this.companyType = companyType;
    }
 }

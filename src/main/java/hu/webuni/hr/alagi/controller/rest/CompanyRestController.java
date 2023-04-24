@@ -144,18 +144,22 @@ public class CompanyRestController {
       return companyMapper.companyToDto(companyService.getCompanyById(companyId, true));
    }
 
-   @GetMapping("/custom-queries")
-   public List<CompanyDto> getCompaniesWithEmployeeSalaryGreaterThan(
-         @RequestParam(value = "salary", required = false) Optional<Integer> salary,
-         @RequestParam(value = "limit", required = false) Optional<Integer> limit
+   @GetMapping(params="aboveSalary")
+   public List<CompanyDto> getCompaniesAboveSalary(
+           @RequestParam Optional<Boolean> full,
+           @RequestParam Integer aboveSalary
    ) {
-      if (salary.isPresent()) {
-         return companyMapper.companiesToDtos(companyService.findByEmployeeWithSalaryGreaterThan(salary.get()));
-      }
-      if (limit.isPresent()) {
-         return companyMapper.companiesToDtos(companyService.findByNumberOfEmployeesGreaterThan(limit.get()));
-      }
-      return companyMapper.companiesToDtos(companyService.getAllCompanies(false));
+      List<Company> filteredCompanies = companyService.findByEmployeeWithSalaryGreaterThan(aboveSalary, full.orElse(false));
+      return companyMapper.companiesToDtos(filteredCompanies);
+   }
+
+   @GetMapping(params="aboveEmployeeCount")
+   public List<CompanyDto> getCompaniesWithEmployeeSalaryGreaterThan(
+           @RequestParam Optional<Boolean> full,
+           @RequestParam Integer aboveEmployeeCount
+   ) {
+      List<Company> filteredCompanies = companyService.findByNumberOfEmployeesGreaterThan(aboveEmployeeCount, full.orElse(false));
+      return companyMapper.companiesToDtos(filteredCompanies);
    }
 
    @GetMapping("/{companyId}/avgSalariesByPosition")

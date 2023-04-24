@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Long> {
-    @Query("SELECT c FROM Company c JOIN c.employeeList e WHERE e.monthlySalary > :salary")
+    @Query("SELECT DISTINCT c FROM Company c JOIN c.employeeList e WHERE e.monthlySalary > :salary")
     List<Company> findByEmployeeWithSalaryGreaterThan(int salary);
 
     @Query("SELECT c FROM Company c WHERE SIZE(c.employeeList) > :limit")

@@ -1,9 +1,12 @@
 package hu.webuni.hr.alagi.service;
 
+import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.model.Position;
 import hu.webuni.hr.alagi.repository.EmployeeRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,6 +41,11 @@ public abstract class AbstractEmployeeService implements EmployeeService {
    public List<Employee> getAllEmployees() {
       return employeeRepository.findAll();
    }
+
+   public Page<Employee> findAllEmployeesUsingPaging(Pageable pageable) {
+      return employeeRepository.findAll(pageable);
+   }
+
 
    @Override
    public List<Employee> filteredEmployeeList(Optional<Position> position, Optional<Integer> minSalary, Optional<String> firstNameStartsWith, Optional<LocalDateTime> start, Optional<LocalDateTime> endd) {

@@ -10,7 +10,9 @@ public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Enumerated(EnumType.STRING)
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "company_type_id")
     private CompanyType companyType;
     private String registerNumber;
     private String name;
@@ -21,6 +23,14 @@ public class Company {
 
     public Company(Long id, CompanyType companyType, String registerNumber, String name, String address, List<Employee> employeeList) {
         this.id = id;
+        this.companyType = companyType;
+        this.registerNumber = registerNumber;
+        this.name = name;
+        this.address = address;
+        this.employeeList = employeeList;
+    }
+
+    public Company(CompanyType companyType, String registerNumber, String name, String address, List<Employee> employeeList) {
         this.companyType = companyType;
         this.registerNumber = registerNumber;
         this.name = name;

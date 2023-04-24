@@ -22,14 +22,34 @@ public class CompanyService {
    }
 
    public List<Company> getAllCompanies(boolean includeEmployeeList) {
-      if (!includeEmployeeList) {
-         List<Company> list = companyRepository.findAll();
-         return list
-               .stream()
-               .map(c->new Company(c.getId(), c.getCompanyType(), c.getRegisterNumber(), c.getName(), c.getAddress(), Collections.emptyList()))
-               .toList();
+      List<Company> list = companyRepository.findAll();
+      if (includeEmployeeList) {
+         return list;
       }
-      return companyRepository.findAll();
+      return companyListWithoutEmployeeList(list);
+   }
+
+   public List<Company> findByEmployeeWithSalaryGreaterThan(int salary, boolean includeEmployeeList) {
+      List<Company> filteredList = companyRepository.findByEmployeeWithSalaryGreaterThan(salary);
+      if (includeEmployeeList) {
+         return companyListWithoutEmployeeList(filteredList);
+      }
+      return filteredList;
+   }
+
+   public List<Company> findByNumberOfEmployeesGreaterThan(int limit, boolean includeEmployeeList) {
+      List<Company> filteredList = companyRepository.findByNumberOfEmployeesGreaterThan(limit);
+      if (includeEmployeeList) {
+         return companyListWithoutEmployeeList(filteredList);
+      }
+      return filteredList;
+   }
+
+   public List<Company> companyListWithoutEmployeeList(List<Company> companyList) {
+      return companyList
+              .stream()
+              .map(c->new Company(c.getId(), c.getCompanyType(), c.getRegisterNumber(), c.getName(), c.getAddress(), Collections.emptyList()))
+              .toList();
    }
 
    public Company getCompanyById(Long id, boolean includeEmployeeList) {
@@ -81,14 +101,6 @@ public class CompanyService {
          }
       }
       return company;
-   }
-
-   public List<Company> findByEmployeeWithSalaryGreaterThan(int salary) {
-      return companyRepository.findByEmployeeWithSalaryGreaterThan(salary);
-   }
-
-   public List<Company> findByNumberOfEmployeesGreaterThan(int limit) {
-      return companyRepository.findByNumberOfEmployeesGreaterThan(limit);
    }
 
 //   public Company removeEmployeeByIdFromCompany(Long companyId, Long employeeId) {

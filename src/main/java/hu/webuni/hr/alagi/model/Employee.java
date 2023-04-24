@@ -18,14 +18,17 @@ public class Employee {
    private String firstName;
    @NotEmpty
    private String lastName;
-   @NotNull
-   @Enumerated(value=EnumType.STRING)
-   private Position position;
+
    @Positive
    private int monthlySalary;
+
    @PastOrPresent
    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
    private LocalDateTime startDate;
+
+   @ManyToOne(fetch=FetchType.LAZY, cascade = CascadeType.ALL)
+   @JoinColumn(name="position_id")
+   private Position position;
 
    @ManyToOne(fetch=FetchType.LAZY, cascade = CascadeType.ALL)
    @JoinColumn(name="company_id")

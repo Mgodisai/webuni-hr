@@ -32,21 +32,5 @@ public class HrApplication implements CommandLineRunner {
 
       initDbService.clearDB();
       initDbService.insertTestData();
-
-//      printResult(EmployeeRepositoryImpl.employee1);
-//      printResult(EmployeeRepositoryImpl.employee2);
-//      printResult(EmployeeRepositoryImpl.employee3);
-//      printResult(EmployeeRepositoryImpl.employee4);
-//      printResult(EmployeeRepositoryImpl.employee5);
-//      printResult(EmployeeRepositoryImpl.employee6);
-   }
-
-   private void printResult(Employee employee) {
-      String pattern = "%s; years: %.2f; new salary: %d\n";
-      System.out.printf(pattern,
-            employee,
-            dateService.calculateYearsBetweenDates(employee.getStartDate(), LocalDateTime.now()),
-            salaryService.getNewMonthlySalary(employee)
-      );
    }
 }
