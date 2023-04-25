@@ -1,7 +1,6 @@
 package hu.webuni.hr.alagi.dto;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import hu.webuni.hr.alagi.model.Position;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -16,15 +15,15 @@ public class EmployeeDto {
    @NotEmpty
    private String lastName;
    @NotNull
-   private Position position;
+   private String position;
    @Positive
    private int monthlySalary;
    @PastOrPresent
    private LocalDateTime startDate;
-   @JsonBackReference
+
    private CompanyDto companyDto;
 
-   public EmployeeDto(Long id, String firstName, String lastName, Position position, int monthlySalary, LocalDateTime startDate, CompanyDto companyDto) {
+   public EmployeeDto(Long id, String firstName, String lastName, String position, int monthlySalary, LocalDateTime startDate, CompanyDto companyDto) {
       this.id = id;
       this.firstName = firstName;
       this.lastName = lastName;
@@ -61,11 +60,11 @@ public class EmployeeDto {
       this.lastName = lastName;
    }
 
-   public Position getPosition() {
+   public String getPosition() {
       return position;
    }
 
-   public void setPosition(Position position) {
+   public void setPosition(String position) {
       this.position = position;
    }
 

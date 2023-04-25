@@ -24,22 +24,21 @@ import java.util.Optional;
 @RequestMapping("/api/companies")
 public class CompanyRestController {
    private final CompanyService companyService;
-   private final CompanyMapper companyMapper;
-   private final EmployeeMapper employeeMapper;
+   private final CommonMapper commonMapper;
    private final EmployeeService employeeService;
 
    @Autowired
-   public CompanyRestController(CompanyService companyService, CompanyMapper companyMapper, EmployeeMapper employeeMapper, EmployeeService employeeService) {
+   public CompanyRestController(CompanyService companyService, CommonMapper commonMapper, EmployeeService employeeService) {
       this.companyService = companyService;
-      this.companyMapper = companyMapper;
-      this.employeeMapper = employeeMapper;
+      this.commonMapper = commonMapper;
       this.employeeService = employeeService;
    }
 
    @GetMapping
    public List<CompanyDto> getAllCompanies(@RequestParam(value="full", required = false) Optional<Boolean> includeEmployeeList) {
       List<Company> companyList = companyService.getAllCompanies(includeEmployeeList.orElse(false));
-      return companyMapper.companiesToDtos(companyList);
+
+      return commonMapper.companiesToDtos(companyList);
    }
 
    @GetMapping("/{companyId}")
@@ -51,13 +50,13 @@ public class CompanyRestController {
       if (requestedCompany==null) {
          throw new EntityNotExistsWithGivenIdException(companyId, Company.class);
       } else {
-         return companyMapper.companyToDto(requestedCompany);
+         return commonMapper.companyToDto(requestedCompany);
       }
    }
 
    @PostMapping
    public CompanyDto addNewCompany(@RequestBody CompanyDto companyDto) {
-      Company savedCompany = companyService.createCompany(companyMapper.dtoToCompany(companyDto))
+      Company savedCompany = companyService.createCompany(commonMapper.dtoToCompany(companyDto))
             .orElseThrow(()->new EntityAlreadyExistsWithGivenIdException(companyDto.getId(), Company.class));
 
       if (savedCompany.getEmployeeList() != null) {
@@ -67,15 +66,15 @@ public class CompanyRestController {
          });
       }
 
-      return companyMapper.companyToDto(savedCompany);
+      return commonMapper.companyToDto(savedCompany);
    }
 
    @PutMapping("/{companyId}")
    public CompanyDto updateCompanyById(@PathVariable Long companyId, @RequestBody CompanyDto companyDto) {
-      Company modifyingCompanyBefore = companyMapper.dtoToCompany(companyDto);
+      Company modifyingCompanyBefore = commonMapper.dtoToCompany(companyDto);
       modifyingCompanyBefore.setId(companyId);
 
-      Company modifyingCompanyAfter = companyService.updateCompany(companyMapper.dtoToCompany(companyDto))
+      Company modifyingCompanyAfter = companyService.updateCompany(commonMapper.dtoToCompany(companyDto))
             .orElseThrow(()-> new EntityNotExistsWithGivenIdException(companyId, Company.class));
 
       if (modifyingCompanyAfter.getEmployeeList() != null) {
@@ -84,7 +83,7 @@ public class CompanyRestController {
             employeeService.updateEmployee(e);
          });
       }
-      return companyMapper.companyToDto(modifyingCompanyAfter);
+      return commonMapper.companyToDto(modifyingCompanyAfter);
    }
 
    @DeleteMapping("/{companyId}")
@@ -99,9 +98,9 @@ public class CompanyRestController {
 
    @PostMapping("/{companyId}/employees")
    public CompanyDto addNewEmployeesToCompany(@PathVariable Long companyId, @RequestBody @Valid List<EmployeeDto> newEmployeeDtos) {
-      Optional<Company> updatedCompany = companyService.addEmployeesToCompany(companyId, employeeMapper.dtosToemployees(newEmployeeDtos));
+      Optional<Company> updatedCompany = companyService.addEmployeesToCompany(companyId, commonMapper.dtosToEmployees(newEmployeeDtos));
 
-      return companyMapper.companyToDto(updatedCompany.orElseThrow(()->new EntityNotExistsWithGivenIdException(companyId, Company.class)));
+      return commonMapper.companyToDto(updatedCompany.orElseThrow(()->new EntityNotExistsWithGivenIdException(companyId, Company.class)));
    }
 
    @DeleteMapping("/{companyId}/employees/{employeeId}")
@@ -121,7 +120,7 @@ public class CompanyRestController {
       } else {
          throw new EmployeeNotBelongsToTheGivenCompanyException(employeeId, companyId);
       }
-      return companyMapper.companyToDto(companyService.getCompanyById(companyId, true));
+      return commonMapper.companyToDto(companyService.getCompanyById(companyId, true));
    }
 
    @PutMapping("/{companyId}/employees")
@@ -131,7 +130,7 @@ public class CompanyRestController {
       if (!companyService.isCompanyExistedByGivenId(companyId)) {
          throw new EntityNotExistsWithGivenIdException(companyId, Company.class);
       }
-      List<Employee> updatingEmployeeList = employeeMapper.dtosToemployees(updatingEmployeeDtoList);
+      List<Employee> updatingEmployeeList = commonMapper.dtosToEmployees(updatingEmployeeDtoList);
       Company company = companyService.getCompanyById(companyId, false);
 
       if (updatingEmployeeList != null) {
@@ -141,7 +140,7 @@ public class CompanyRestController {
          });
       }
 
-      return companyMapper.companyToDto(companyService.getCompanyById(companyId, true));
+      return commonMapper.companyToDto(companyService.getCompanyById(companyId, true));
    }
 
    @GetMapping(params="aboveSalary")
@@ -150,7 +149,7 @@ public class CompanyRestController {
            @RequestParam Integer aboveSalary
    ) {
       List<Company> filteredCompanies = companyService.findByEmployeeWithSalaryGreaterThan(aboveSalary, full.orElse(false));
-      return companyMapper.companiesToDtos(filteredCompanies);
+      return commonMapper.companiesToDtos(filteredCompanies);
    }
 
    @GetMapping(params="aboveEmployeeCount")
@@ -159,7 +158,7 @@ public class CompanyRestController {
            @RequestParam Integer aboveEmployeeCount
    ) {
       List<Company> filteredCompanies = companyService.findByNumberOfEmployeesGreaterThan(aboveEmployeeCount, full.orElse(false));
-      return companyMapper.companiesToDtos(filteredCompanies);
+      return commonMapper.companiesToDtos(filteredCompanies);
    }
 
    @GetMapping("/{companyId}/avgSalariesByPosition")
