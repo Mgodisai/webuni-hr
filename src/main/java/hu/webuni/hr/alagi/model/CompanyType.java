@@ -11,7 +11,14 @@ public class CompanyType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String shortName;
+
     private String longName;
+
+    public CompanyType(Long id, String shortName, String longName) {
+        this.id = id;
+        this.shortName = shortName;
+        this.longName = longName;
+    }
 
     public CompanyType(String shortName, String longName) {
         this.shortName = shortName;
@@ -19,7 +26,14 @@ public class CompanyType {
     }
 
     public CompanyType() {
+    }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getShortName() {

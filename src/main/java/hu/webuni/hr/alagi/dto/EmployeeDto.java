@@ -1,6 +1,5 @@
 package hu.webuni.hr.alagi.dto;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -20,7 +19,6 @@ public class EmployeeDto {
    private int monthlySalary;
    @PastOrPresent
    private LocalDateTime startDate;
-
    private CompanyDto companyDto;
 
    public EmployeeDto(Long id, String firstName, String lastName, String position, int monthlySalary, LocalDateTime startDate, CompanyDto companyDto) {

@@ -1,7 +1,5 @@
 package hu.webuni.hr.alagi.dto;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +9,6 @@ public class CompanyDto {
    private String companyType;
    private String name;
    private String address;
-
    private List<EmployeeDto> employeeDtoList;
 
    public CompanyDto(Long id, String registerNumber, String companyType, String name, String address, List<EmployeeDto> employeeDtoList) {
