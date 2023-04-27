@@ -7,7 +7,6 @@ import hu.webuni.hr.alagi.exception.EntityAlreadyExistsWithGivenIdException;
 import hu.webuni.hr.alagi.exception.EntityNotExistsWithGivenIdException;
 import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.model.Employee;
-import hu.webuni.hr.alagi.model.Position;
 import hu.webuni.hr.alagi.service.CompanyService;
 import hu.webuni.hr.alagi.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -164,7 +163,7 @@ public class CompanyRestController {
    }
 
    @GetMapping("/{companyId}/avgSalariesByPosition")
-   public Map<Position, Double> getCompaniesWithEmployeeSalaryGreaterThan(
+   public Map<String, Double> getCompaniesWithEmployeeSalaryGreaterThan(
            @PathVariable Long companyId
    ) {
       return employeeService.getAvgSalariesByPositionUsingCompanyId(companyId);

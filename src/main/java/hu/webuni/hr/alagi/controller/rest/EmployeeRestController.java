@@ -8,6 +8,8 @@ import hu.webuni.hr.alagi.model.Position;
 import hu.webuni.hr.alagi.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,25 +32,16 @@ public class EmployeeRestController {
       this.employeeMapper = employeeMapper;
    }
 
-//   @GetMapping
-//   public ResponseEntity<List<EmployeeDto>> getAllEmployees(@RequestParam(value="minSalary", required = false) Optional<Integer> minSalaryOptional) {
-//      if (minSalaryOptional.isPresent()){
-//         int minSalary = minSalaryOptional.get();
-//         List<Employee> employeeList = employeeService.getAllEmployeesUsingMinSalary(minSalary);
-//         return new ResponseEntity<>(employeeMapper.employeesToDtos(employeeList), HttpStatus.OK);
-//      } else {
-//         return new ResponseEntity<>(employeeMapper.employeesToDtos(employeeService.getAllEmployees()),HttpStatus.OK);
-//      }
-//   }
-
    @GetMapping
    public ResponseEntity<List<EmployeeDto>> getFilteredEmployeeList(
          @RequestParam(value="position", required = false) Optional<Position> position,
          @RequestParam(value="firstNameStartsWith", required = false) Optional<String> firstNameStartsWith,
          @RequestParam(value="minDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> minDate,
          @RequestParam(value="maxDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> maxDate,
-         @RequestParam(value="minSalary", required = false) Optional<Integer> minSalary) {
-      List<Employee> filteredEmployeeList = employeeService.filteredEmployeeList(position, minSalary, firstNameStartsWith, minDate, maxDate);
+         @RequestParam(value="minSalary", required = false) Optional<Integer> minSalary,
+         Pageable pageable) {
+      Page<Employee> filteredEmployeePage = employeeService.filteredEmployeeList(position, minSalary, firstNameStartsWith, minDate, maxDate, pageable);
+      List<Employee> filteredEmployeeList = filteredEmployeePage.getContent();
       return new ResponseEntity<>(employeeMapper.employeesToDtos(filteredEmployeeList), HttpStatus.OK);
    }
 

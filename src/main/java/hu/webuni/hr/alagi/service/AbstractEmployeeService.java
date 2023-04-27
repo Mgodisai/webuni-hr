@@ -1,6 +1,5 @@
 package hu.webuni.hr.alagi.service;
 
-import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.model.Position;
 import hu.webuni.hr.alagi.repository.EmployeeRepository;
@@ -48,13 +47,14 @@ public abstract class AbstractEmployeeService implements EmployeeService {
 
 
    @Override
-   public List<Employee> filteredEmployeeList(Optional<Position> position, Optional<Integer> minSalary, Optional<String> firstNameStartsWith, Optional<LocalDateTime> start, Optional<LocalDateTime> endd) {
+   public Page<Employee> filteredEmployeeList(Optional<Position> position, Optional<Integer> minSalary, Optional<String> firstNameStartsWith, Optional<LocalDateTime> start, Optional<LocalDateTime> endd, Pageable pageable) {
       return employeeRepository.filterEmployees(
-            position.orElse(null),
-            minSalary.orElse(null),
-            firstNameStartsWith.orElse(null),
-            start.orElse(employeeRepository.findMinStartDate()),
-            endd.orElse(employeeRepository.findMaxStartDate()));
+              position.orElse(null),
+              minSalary.orElse(null),
+              firstNameStartsWith.orElse(null),
+              start.orElse(employeeRepository.findMinStartDate()),
+              endd.orElse(employeeRepository.findMaxStartDate()),
+              pageable);
    }
 
    public List<Employee> getAllEmployeesUsingMinSalary(Integer minSalary) {
@@ -90,12 +90,12 @@ public abstract class AbstractEmployeeService implements EmployeeService {
       employeeRepository.deleteById(id);
    }
 
-   public Map<Position, Double> getAvgSalariesByPositionUsingCompanyId(Long companyId) {
+   public Map<String, Double> getAvgSalariesByPositionUsingCompanyId(Long companyId) {
 
       List<Object[]> results = employeeRepository.getAvgSalariesByPositionUsingCompanyId(companyId);
       return results.stream()
               .collect(Collectors.toMap(
-                      row -> (Position) row[0],
+                      row -> (String) row[0],
                       row -> (Double) row[1]
               ));
    }

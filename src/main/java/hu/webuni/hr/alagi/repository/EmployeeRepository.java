@@ -2,6 +2,8 @@ package hu.webuni.hr.alagi.repository;
 
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.model.Position;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -28,12 +30,12 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
          "(e.startDate>:startt or e.startDate=:startt) and "+
          "(e.startDate<:endd or e.startDate=:endd)"
    )
-   List<Employee> filterEmployees(Position position, Integer minSalary, String firstNameStartsWith, LocalDateTime startt, LocalDateTime endd);
+   Page<Employee> filterEmployees(Position position, Integer minSalary, String firstNameStartsWith, LocalDateTime startt, LocalDateTime endd, Pageable pageable);
 
-   @Query("SELECT e.position, AVG(e.monthlySalary) " +
+   @Query("SELECT e.position.name, AVG(e.monthlySalary) " +
            "FROM Employee e " +
            "WHERE e.company.id = :companyId " +
-           "GROUP BY e.position "+
+           "GROUP BY e.position.name "+
            "ORDER BY AVG(e.monthlySalary) DESC")
    List<Object[]> getAvgSalariesByPositionUsingCompanyId(Long companyId);
 }
