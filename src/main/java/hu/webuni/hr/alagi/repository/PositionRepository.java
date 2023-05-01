@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PositionRepository extends JpaRepository<Position, Long> {
-    List<Position> getPositionByName(String name);
+public interface PositionRepository extends JpaRepository<Position, Integer> {
+   List<Position> getPositionsByName(String name);
 }

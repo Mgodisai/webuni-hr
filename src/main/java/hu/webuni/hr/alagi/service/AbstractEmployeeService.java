@@ -3,6 +3,7 @@ package hu.webuni.hr.alagi.service;
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.model.Position;
 import hu.webuni.hr.alagi.repository.EmployeeRepository;
+import hu.webuni.hr.alagi.repository.PositionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,9 +17,11 @@ import java.util.stream.Collectors;
 public abstract class AbstractEmployeeService implements EmployeeService {
 
    private final EmployeeRepository employeeRepository;
+   private final PositionRepository positionRepository;
 
-   protected AbstractEmployeeService(EmployeeRepository employeeRepository) {
+   protected AbstractEmployeeService(EmployeeRepository employeeRepository, PositionRepository positionRepository) {
       this.employeeRepository = employeeRepository;
+      this.positionRepository = positionRepository;
    }
 
    @Override
@@ -62,7 +65,7 @@ public abstract class AbstractEmployeeService implements EmployeeService {
    }
 
    public Optional<Employee> getEmployeeById(Long id) {
-      return employeeRepository.findById(id);
+      return employeeRepository.findEmployeeByIdWithCompany(id);
    }
 
    @Transactional
@@ -70,6 +73,9 @@ public abstract class AbstractEmployeeService implements EmployeeService {
       if (employee.getId()!=null && isEmployeeExistedByGivenId(employee.getId())) {
          return Optional.empty();
       }
+      Position position = positionRepository.findById(employee.getPosition().getId())
+            .orElseGet(() -> positionRepository.save(employee.getPosition()));
+      employee.setPosition(position);
       return Optional.of(employeeRepository.save(employee));
    }
 
@@ -88,6 +94,11 @@ public abstract class AbstractEmployeeService implements EmployeeService {
    @Transactional
    public void deleteEmployee(Long id) {
       employeeRepository.deleteById(id);
+   }
+
+   @Transactional
+   public void deleteEmployee(Employee employee) {
+      employeeRepository.delete(employee);
    }
 
    public Map<String, Double> getAvgSalariesByPositionUsingCompanyId(Long companyId) {

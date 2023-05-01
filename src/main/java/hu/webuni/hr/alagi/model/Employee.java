@@ -2,7 +2,6 @@ package hu.webuni.hr.alagi.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,7 +25,7 @@ public class Employee {
    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
    private LocalDateTime startDate;
 
-   @ManyToOne(fetch=FetchType.LAZY, cascade = CascadeType.ALL)
+   @ManyToOne(fetch=FetchType.EAGER, cascade = CascadeType.ALL)
    @JoinColumn(name="position_id")
    private Position position;
 

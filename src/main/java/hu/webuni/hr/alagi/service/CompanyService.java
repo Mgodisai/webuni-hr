@@ -1,13 +1,16 @@
 package hu.webuni.hr.alagi.service;
 
+import hu.webuni.hr.alagi.exception.EmployeeNotBelongsToTheGivenCompanyException;
+import hu.webuni.hr.alagi.exception.EntityNotExistsWithGivenIdException;
 import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.repository.CompanyRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -22,57 +25,43 @@ public class CompanyService {
    }
 
    public List<Company> getAllCompanies(boolean includeEmployeeList) {
-      List<Company> list = companyRepository.findAll();
-      if (includeEmployeeList) {
-         return list;
-      }
-      return companyListWithoutEmployeeList(list);
-   }
-
-   public List<Company> findByEmployeeWithSalaryGreaterThan(int salary, boolean includeEmployeeList) {
-      List<Company> filteredList = companyRepository.findByEmployeeWithSalaryGreaterThan(salary);
-      if (includeEmployeeList) {
-         return companyListWithoutEmployeeList(filteredList);
-      }
-      return filteredList;
-   }
-
-   public List<Company> findByNumberOfEmployeesGreaterThan(int limit, boolean includeEmployeeList) {
-      List<Company> filteredList = companyRepository.findByNumberOfEmployeesGreaterThan(limit);
-      if (includeEmployeeList) {
-         return companyListWithoutEmployeeList(filteredList);
-      }
-      return filteredList;
-   }
-
-   public List<Company> companyListWithoutEmployeeList(List<Company> companyList) {
-      return companyList
-              .stream()
-              .map(c->new Company(c.getId(), c.getCompanyType(), c.getRegisterNumber(), c.getName(), c.getAddress(), Collections.emptyList()))
-              .toList();
+      return includeEmployeeList
+            ? companyRepository.findAllWithEmployees()
+            : companyRepository.findAll();
    }
 
    public Company getCompanyById(Long id, boolean includeEmployeeList) {
-      Company company = companyRepository.findById(id).orElse(null);
-      if (company==null) {
-         return null;
-      }
-      if (!includeEmployeeList) {
-         return new Company(
-               company.getId(),
-                 company.getCompanyType(), company.getRegisterNumber(),
-               company.getName(),
-               company.getAddress(),
-               Collections.emptyList());
-      }
-      return company;
+      Optional<Company> company = includeEmployeeList
+            ? companyRepository.findCompanyByIdWithEmployees(id)
+            : companyRepository.findById(id);
+      return company.orElse(null);
    }
 
+   public List<Company> findCompaniesByEmployeeWithSalaryGreaterThan(int salary, boolean includeEmployeeList) {
+      return companyRepository.findByEmployeeWithSalaryGreaterThan(salary);
+   }
+
+   public List<Company> findByNumberOfEmployeesGreaterThan(int limit, boolean includeEmployeeList) {
+      return companyRepository.findByNumberOfEmployeesGreaterThan(limit);
+   }
+
+
+   @Transactional
    public Optional<Company> createCompany(Company company) {
       if (company.getId()!=null && isCompanyExistedByGivenId(company.getId())) {
          return Optional.empty();
       } else {
-         return Optional.of(companyRepository.save(company));
+         List<Employee> employeeList = company.getEmployeeList();
+         company.setEmployeeList(null);
+         Company savedCompany = companyRepository.save(company);
+
+         if (employeeList != null) {
+            employeeList.forEach(e -> {
+               e.setCompany(savedCompany);
+               employeeService.createEmployee(e);
+            });
+         }
+         return Optional.of(companyRepository.save(savedCompany));
       }
    }
 
@@ -80,6 +69,7 @@ public class CompanyService {
       return companyRepository.existsById(id);
    }
 
+   @Transactional
    public Optional<Company> updateCompany(Company company) {
       if (company.getId()==null || !isCompanyExistedByGivenId(company.getId())) {
          return Optional.empty();
@@ -88,47 +78,65 @@ public class CompanyService {
       }
    }
 
+   @Transactional
    public void deleteCompany(Long id) {
       companyRepository.deleteById(id);
    }
 
+   @Transactional
    public Optional<Company> addEmployeesToCompany(Long companyId, List<Employee> employeeList) {
-      Optional<Company> company = companyRepository.findById(companyId);
+      Optional<Company> company = companyRepository.findCompanyByIdWithEmployees(companyId);
       if (company.isPresent()) {
          for (Employee e : employeeList) {
             e.setCompany(company.get());
             employeeService.createEmployee(e);
+            company.get().getEmployeeList().add(e);
          }
+         companyRepository.save(company.get());
+         return company;
       }
-      return company;
+      return Optional.empty();
    }
 
-//   public Company removeEmployeeByIdFromCompany(Long companyId, Long employeeId) {
-//      Company company = companyRepository.findById(companyId);
-//      if (company == null) {
-//         return null;
-//      }
-//      company.getEmployeeList().remove(employeeId.intValue());
-//      return company;
-//   }
-//
-//   public Company changeEmployeeListOfCompany(Long companyId, List<Employee> employeeList) {
-//      Company company = companyRepository.findById(companyId);
-//      if (company == null) {
-//         return null;
-//      }
-//      company.setEmployeeList(employeeList);
-//      return company;
-//   }
-//
-//   public boolean isEmployeeExistsInCompany(Long companyId, Long employeeId) {
-//      Company company = companyRepository.findById(companyId);
-//      Employee employee;
-//      try {
-//         employee = company.getEmployeeList().get(employeeId.intValue());
-//      } catch (IndexOutOfBoundsException e) {
-//         return false;
-//      }
-//      return employee != null;
-//   }
+   @Transactional
+   public Company removeEmployeeByIdFromCompany(Long companyId, Long employeeId) {
+      Optional<Company> company = companyRepository.findCompanyByIdWithEmployees(companyId);
+      if (company.isEmpty()) {
+         throw new EntityNotExistsWithGivenIdException(companyId, Company.class);
+      }
+      Optional<Employee> employee = employeeService.getEmployeeById(employeeId);
+      if (employee.isEmpty()) {
+         throw new EntityNotExistsWithGivenIdException(employeeId, Employee.class);
+      }
+      if (Objects.equals(employee.get().getCompany().getId(), companyId)) {
+         employee.get().setCompany(null);
+         employeeService.updateEmployee(employee.get());
+         company.get().getEmployeeList().remove(employee.get());
+      } else {
+         throw new EmployeeNotBelongsToTheGivenCompanyException(employeeId, companyId);
+      }
+      return company.get();
+   }
+
+   @Transactional
+   public Company replaceEmployeeList(Long companyId, List<Employee> employees) {
+      Optional<Company> company = companyRepository.findCompanyByIdWithEmployees(companyId);
+      if (company.isEmpty()) {
+         return null;
+      } else {
+         Company existingCompany = company.get();
+         for (Employee emp : existingCompany.getEmployeeList()) {
+            emp.setCompany(null);
+            employeeService.updateEmployee(emp);
+         }
+         existingCompany.getEmployeeList().clear();
+         for (Employee emp : employees) {
+            existingCompany.getEmployeeList().add(emp);
+            emp.setCompany(existingCompany);
+            employeeService.createEmployee(emp);
+         }
+         return companyRepository.save(existingCompany);
+      }
+
+   }
 }

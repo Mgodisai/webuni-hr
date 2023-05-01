@@ -3,6 +3,7 @@ package hu.webuni.hr.alagi.service;
 import hu.webuni.hr.alagi.config.HrConfigProperties;
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.repository.EmployeeRepository;
+import hu.webuni.hr.alagi.repository.PositionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +18,8 @@ public class SmartEmployeeService extends AbstractEmployeeService {
    @Autowired
    DateService dateSevice;
 
-   public SmartEmployeeService(EmployeeRepository employeeRepository) {
-      super(employeeRepository);
+   public SmartEmployeeService(EmployeeRepository employeeRepository, PositionRepository positionRepository) {
+      super(employeeRepository, positionRepository);
    }
 
    @Override

@@ -22,6 +22,7 @@ public interface EmployeeService {
    boolean isEmployeeExistedByGivenId(Long id);
    Optional<Employee> updateEmployee(Employee employee);
    void deleteEmployee(Long id);
+   void deleteEmployee(Employee employee);
    int getPayRaisePercent(Employee employee);
    Map<String, Double> getAvgSalariesByPositionUsingCompanyId(Long companyId);
 }
