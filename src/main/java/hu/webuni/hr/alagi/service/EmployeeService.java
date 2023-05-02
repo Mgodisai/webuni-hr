@@ -25,4 +25,5 @@ public interface EmployeeService {
    void deleteEmployee(Employee employee);
    int getPayRaisePercent(Employee employee);
    Map<String, Double> getAvgSalariesByPositionUsingCompanyId(Long companyId);
+   Page<Employee> findEmployeesByExample(Employee example, Pageable pageable);
 }

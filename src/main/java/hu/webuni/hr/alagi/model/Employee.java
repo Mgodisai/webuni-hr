@@ -19,7 +19,7 @@ public class Employee {
    private String lastName;
 
    @Positive
-   private int monthlySalary;
+   private Integer monthlySalary;
 
    @PastOrPresent
    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
@@ -33,7 +33,7 @@ public class Employee {
    @JoinColumn(name="company_id")
    private Company company;
 
-   public Employee(Long id, String firstName, String lastName, Position position, int monthlySalary, LocalDateTime startDate, Company company) {
+   public Employee(Long id, String firstName, String lastName, Position position, Integer monthlySalary, LocalDateTime startDate, Company company) {
       this.id = id;
       this.firstName = firstName;
       this.lastName = lastName;
@@ -91,11 +91,11 @@ public class Employee {
       this.position = position;
    }
 
-   public int getMonthlySalary() {
+   public Integer getMonthlySalary() {
       return monthlySalary;
    }
 
-   public void setMonthlySalary(int monthlySalary) {
+   public void setMonthlySalary(Integer monthlySalary) {
       this.monthlySalary = monthlySalary;
    }
 

@@ -7,6 +7,8 @@ import hu.webuni.hr.alagi.repository.PositionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -109,5 +111,33 @@ public abstract class AbstractEmployeeService implements EmployeeService {
                       row -> (String) row[0],
                       row -> (Double) row[1]
               ));
+   }
+
+
+   public Page<Employee> findEmployeesByExample(Employee example, Pageable pageable) {
+      Specification<Employee> spec = Specification.where(EmployeeSpecifications.fetchCompany());
+      if (example.getId()!=null) {
+         spec = spec.and(EmployeeSpecifications.hasId(example.getId()));
+      }
+      if (StringUtils.hasText(example.getFirstName())) {
+         spec = spec.and(EmployeeSpecifications.likeFirstNameIgnoreCase(example.getFirstName()));
+      }
+      if (example.getPosition().getId()!=null) {
+         spec = spec.and(EmployeeSpecifications.hasPosition(example.getPosition()));
+      }
+      if (example.getMonthlySalary()!=null && example.getMonthlySalary()>0) {
+         double min = example.getMonthlySalary()*0.95;
+         double max = example.getMonthlySalary()*1.05;
+         spec = spec.and(EmployeeSpecifications.isMonthlySalaryBetweenMinAndMax(min, max));
+      }
+
+      if (example.getStartDate()!=null) {
+         spec = spec.and(EmployeeSpecifications.isStartDateOnSpecifiedDate(example.getStartDate().toLocalDate()));
+      }
+
+      if (example.getCompany()!=null) {
+         spec = spec.and(EmployeeSpecifications.likeCompanyNameIgnoreCase(example.getCompany().getName()));
+      }
+      return employeeRepository.findAll(spec, pageable);
    }
 }

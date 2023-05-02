@@ -32,6 +32,12 @@ public class EmployeeRestController {
       this.employeeMapper = employeeMapper;
    }
 
+   @PostMapping("/search")
+   public List<EmployeeDto> searchEmployees(@RequestBody EmployeeDto exampleDto, Pageable pageable) {
+      Employee example = employeeMapper.dtoToEmployee(exampleDto);
+      return employeeMapper.employeesToDtos(employeeService.findEmployeesByExample(example, pageable).toList());
+   }
+
    @GetMapping
    public ResponseEntity<List<EmployeeDto>> getFilteredEmployeeList(
          @RequestParam(value="position", required = false) Optional<Position> position,
