@@ -10,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,44 +25,8 @@ public abstract class AbstractEmployeeService implements EmployeeService {
       this.positionRepository = positionRepository;
    }
 
-   @Override
-   public List<Employee> findEmployeesByPosition(Position position) {
-      return employeeRepository.findEmployeesByPosition(position);
-   }
-
-   @Override
-   public List<Employee> findEmployeesByFirstNameStartingWith(String text) {
-      return employeeRepository.findEmployeesByFirstNameStartsWithIgnoreCase(text);
-   }
-
-   @Override
-   public List<Employee> findEmployeesByStartingDateBetweenDates(LocalDateTime start, LocalDateTime end) {
-      return employeeRepository.findEmployeesByStartDateBetween(start, end);
-   }
-
-
    public List<Employee> getAllEmployees() {
-      return employeeRepository.findAll();
-   }
-
-   public Page<Employee> findAllEmployeesUsingPaging(Pageable pageable) {
-      return employeeRepository.findAll(pageable);
-   }
-
-
-   @Override
-   public Page<Employee> filteredEmployeeList(Optional<Position> position, Optional<Integer> minSalary, Optional<String> firstNameStartsWith, Optional<LocalDateTime> start, Optional<LocalDateTime> endd, Pageable pageable) {
-      return employeeRepository.filterEmployees(
-              position.orElse(null),
-              minSalary.orElse(null),
-              firstNameStartsWith.orElse(null),
-              start.orElse(employeeRepository.findMinStartDate()),
-              endd.orElse(employeeRepository.findMaxStartDate()),
-              pageable);
-   }
-
-   public List<Employee> getAllEmployeesUsingMinSalary(Integer minSalary) {
-      return employeeRepository.findByMonthlySalaryGreaterThanEqual(minSalary);
+      return employeeRepository.findAllEmployeesWithCompany();
    }
 
    public Optional<Employee> getEmployeeById(Long id) {

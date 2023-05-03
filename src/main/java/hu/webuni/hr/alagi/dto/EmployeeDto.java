@@ -6,6 +6,7 @@ import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class EmployeeDto {
    private Long id;
@@ -88,5 +89,18 @@ public class EmployeeDto {
 
    public void setCompanyDto(CompanyDto companyDto) {
       this.companyDto = companyDto;
+   }
+
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      EmployeeDto that = (EmployeeDto) o;
+      return monthlySalary == that.monthlySalary && Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName) && Objects.equals(position, that.position) && Objects.equals(startDate, that.startDate) && Objects.equals(companyDto, that.companyDto);
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(firstName, lastName, position, monthlySalary, startDate, companyDto);
    }
 }

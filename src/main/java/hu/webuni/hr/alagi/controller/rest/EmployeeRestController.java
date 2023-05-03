@@ -32,23 +32,15 @@ public class EmployeeRestController {
       this.employeeMapper = employeeMapper;
    }
 
+   @GetMapping
+   public List<EmployeeDto> getAllEmployees() {
+      return employeeMapper.employeesToDtos(employeeService.getAllEmployees());
+   }
+
    @PostMapping("/search")
    public List<EmployeeDto> searchEmployees(@RequestBody EmployeeDto exampleDto, Pageable pageable) {
       Employee example = employeeMapper.dtoToEmployee(exampleDto);
       return employeeMapper.employeesToDtos(employeeService.findEmployeesByExample(example, pageable).toList());
-   }
-
-   @GetMapping
-   public ResponseEntity<List<EmployeeDto>> getFilteredEmployeeList(
-         @RequestParam(value="position", required = false) Optional<Position> position,
-         @RequestParam(value="firstNameStartsWith", required = false) Optional<String> firstNameStartsWith,
-         @RequestParam(value="minDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> minDate,
-         @RequestParam(value="maxDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> maxDate,
-         @RequestParam(value="minSalary", required = false) Optional<Integer> minSalary,
-         Pageable pageable) {
-      Page<Employee> filteredEmployeePage = employeeService.filteredEmployeeList(position, minSalary, firstNameStartsWith, minDate, maxDate, pageable);
-      List<Employee> filteredEmployeeList = filteredEmployeePage.getContent();
-      return new ResponseEntity<>(employeeMapper.employeesToDtos(filteredEmployeeList), HttpStatus.OK);
    }
 
    @GetMapping("/{id}")
