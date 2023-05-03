@@ -5,13 +5,9 @@ import hu.webuni.hr.alagi.exception.DefaultErrorEntity;
 import hu.webuni.hr.alagi.exception.ValidationErrorEntity;
 import hu.webuni.hr.alagi.service.EmployeeService;
 import hu.webuni.hr.alagi.service.InitDbService;
-import org.aspectj.lang.annotation.Before;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -38,15 +34,6 @@ class EmployeeRestControllerIT {
 
    @Autowired
    private EmployeeMapper employeeMapper;
-
-    @Autowired
-    private InitDbService initDbService;
-
-    @BeforeEach
-    public void setDb() {
-        initDbService.clearDB();
-        initDbService.insertTestData();
-    }
 
    public List<EmployeeDto> getAllEmployees() {
       return webTestClient
@@ -207,7 +194,7 @@ class EmployeeRestControllerIT {
 
    @Test
    void testDeleteEmployeeByValidId() {
-      Long testEmployeeId = 1L;
+      Long testEmployeeId = 5L;
       webTestClient.delete()
             .uri(BASE_URI+"/{id}", testEmployeeId)
             .exchange()

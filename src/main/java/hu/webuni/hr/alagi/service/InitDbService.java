@@ -58,6 +58,8 @@ public class InitDbService {
         Employee employee2 = new Employee( "Géza", "Nagy", softwareDesigner, 6000, LocalDateTime.now(), companyA);
         Employee employee3 = new Employee( "Pál", "Kovács", developer, 4500, LocalDateTime.now(), companyA);
         Employee employee4 = new Employee("Mária", "Tóth", ceo, 15500, LocalDateTime.now(), companyB);
-        employeeRepository.saveAll(Arrays.asList(employee1, employee2, employee3, employee4));
+        Employee employee5 = new Employee("Tibor", "Tóth", administrator, 2500, LocalDateTime.now(), null);
+
+        employeeRepository.saveAll(Arrays.asList(employee1, employee2, employee3, employee4, employee5));
     }
 }

@@ -126,7 +126,7 @@ public class CompanyRestController {
    }
 
    @DeleteMapping("/{companyId}/employees/{employeeId}")
-   public CompanyDto removeEmployeeToCompanyByEmployeeId(
+   public CompanyDto removeEmployeeFromCompanyByEmployeeId(
          @PathVariable Long companyId,
          @PathVariable Long employeeId) {
       return companyMapper.companyToDto(companyService.removeEmployeeByIdFromCompany(companyId, employeeId));

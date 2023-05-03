@@ -5,22 +5,23 @@ import hu.webuni.hr.alagi.dto.EmployeeDto;
 import hu.webuni.hr.alagi.exception.DefaultErrorEntity;
 import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.service.CompanyService;
+import hu.webuni.hr.alagi.service.EmployeeService;
 import hu.webuni.hr.alagi.service.InitDbService;
 import org.aspectj.lang.annotation.Before;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Transactional
 @AutoConfigureTestDatabase
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CompanyRestControllerIT {
@@ -94,8 +95,54 @@ class CompanyRestControllerIT {
     }
 
     @Test
-    void removeEmployeeToCompanyByEmployeeId() {
+    void removeEmployeeFromCompanyByValidEmployeeId() {
+       Long validCompanyId = 1L;
+       Long validEmployeeId = 1L;
+
+       String validUrl = String.format(BASE_URI + "/%d/employees/%d", validCompanyId, validEmployeeId);
+
+       webTestClient.delete()
+             .uri(validUrl)
+             .exchange()
+             .expectStatus().isOk()
+             .expectBody(CompanyDto.class)
+             .returnResult();
+
+       Company updatedCompany = companyService.getCompanyById(validCompanyId, true);
+       assertThat(updatedCompany).isNotNull();
+       assertThat(updatedCompany.getId()).isEqualTo(validCompanyId);
+       assertThat(updatedCompany.getEmployeeList()).allSatisfy(remainingEmployee -> {
+          assertThat(remainingEmployee.getId()).isNotEqualTo(validEmployeeId);
+       });
     }
+
+   @Test
+   void removeEmployeeFromCompanyByInvalidEmployeeId() {
+      Long validCompanyId = 1L;
+      Long invalidEmployeeId = -1L;
+
+      String invalidEmployeeUrl = String.format(BASE_URI + "/%d/employees/%d", validCompanyId, invalidEmployeeId);
+      Company companyBefore = companyService.getCompanyById(validCompanyId, true);
+
+      webTestClient.delete()
+            .uri(invalidEmployeeUrl)
+            .exchange()
+            .expectStatus()
+            .isBadRequest()
+            .expectBody(DefaultErrorEntity.class)
+            .consumeWith(response->{
+               DefaultErrorEntity e = response.getResponseBody();
+               assertThat(e).isNotNull();
+               assertThat(e.getErrorCode()).isEqualTo(1002);
+               assertThat(e.getErrorMessage()).isEqualTo("Employee not exists with id: "+invalidEmployeeId.toString());
+            });
+
+      Company companyAfter = companyService.getCompanyById(validCompanyId, true);
+      assertThat(companyAfter).isNotNull();
+      assertThat(companyAfter.getId()).isEqualTo(validCompanyId);
+      assertThat(companyAfter.getEmployeeList().size()).isEqualTo(companyBefore.getEmployeeList().size());
+   }
+
 
     @Test
     void updateEmployeesOfCompany() {

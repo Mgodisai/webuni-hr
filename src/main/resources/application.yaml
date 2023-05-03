@@ -5,12 +5,12 @@ spring:
     cache: false
   datasource:
     url: jdbc:postgresql://localhost:5432/hr
-    username: postgres
-    password: postgres
+    username: user
+    password: userpass
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     open-in-view: false
 
 hr:
