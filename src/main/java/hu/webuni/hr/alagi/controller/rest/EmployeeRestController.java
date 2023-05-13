@@ -3,21 +3,16 @@ package hu.webuni.hr.alagi.controller.rest;
 import hu.webuni.hr.alagi.dto.EmployeeDto;
 import hu.webuni.hr.alagi.exception.EntityAlreadyExistsWithGivenIdException;
 import hu.webuni.hr.alagi.exception.EntityNotExistsWithGivenIdException;
+import hu.webuni.hr.alagi.mapper.EmployeeMapper;
 import hu.webuni.hr.alagi.model.Employee;
-import hu.webuni.hr.alagi.model.Position;
 import hu.webuni.hr.alagi.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/employees")

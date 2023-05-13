@@ -4,6 +4,8 @@ import hu.webuni.hr.alagi.dto.CompanyDto;
 import hu.webuni.hr.alagi.dto.EmployeeDto;
 import hu.webuni.hr.alagi.exception.EntityAlreadyExistsWithGivenIdException;
 import hu.webuni.hr.alagi.exception.EntityNotExistsWithGivenIdException;
+import hu.webuni.hr.alagi.mapper.CompanyMapper;
+import hu.webuni.hr.alagi.mapper.EmployeeMapper;
 import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.service.CompanyService;
 import hu.webuni.hr.alagi.service.EmployeeService;

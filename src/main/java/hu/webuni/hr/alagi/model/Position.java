@@ -1,5 +1,6 @@
 package hu.webuni.hr.alagi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public class Position {
    @Enumerated(EnumType.STRING)
    private Qualification qualification;
 
+   @JsonIgnore
    @OneToMany(mappedBy = "position")
    private List<Employee> employeeList;
 

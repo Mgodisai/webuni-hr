@@ -5,7 +5,6 @@ import hu.webuni.hr.alagi.dto.EmployeeDto;
 import hu.webuni.hr.alagi.exception.DefaultErrorEntity;
 import hu.webuni.hr.alagi.model.Company;
 import hu.webuni.hr.alagi.service.CompanyService;
-import hu.webuni.hr.alagi.service.EmployeeService;
 import hu.webuni.hr.alagi.service.InitDbService;
 import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.Test;
@@ -134,7 +133,7 @@ class CompanyRestControllerIT {
                DefaultErrorEntity e = response.getResponseBody();
                assertThat(e).isNotNull();
                assertThat(e.getErrorCode()).isEqualTo(1002);
-               assertThat(e.getErrorMessage()).isEqualTo("Employee not exists with id: "+invalidEmployeeId.toString());
+               assertThat(e.getErrorMessage()).isEqualTo("Employee not exists with id: "+invalidEmployeeId);
             });
 
       Company companyAfter = companyService.getCompanyById(validCompanyId, true);

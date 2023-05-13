@@ -1,14 +1,12 @@
 package hu.webuni.hr.alagi.service;
 
 import hu.webuni.hr.alagi.model.*;
-import hu.webuni.hr.alagi.repository.CompanyRepository;
-import hu.webuni.hr.alagi.repository.CompanyTypeRepository;
-import hu.webuni.hr.alagi.repository.EmployeeRepository;
-import hu.webuni.hr.alagi.repository.PositionRepository;
+import hu.webuni.hr.alagi.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
@@ -19,12 +17,15 @@ public class InitDbService {
     private final CompanyTypeRepository companyTypeRepository;
     private final PositionRepository positionRepository;
 
+    private final LeaveRequestRepository leaveRequestRepository;
+
     @Autowired
-    public InitDbService(CompanyRepository companyRepository, EmployeeRepository employeeRepository, CompanyTypeRepository companyTypeRepository, PositionRepository positionRepository) {
+    public InitDbService(CompanyRepository companyRepository, EmployeeRepository employeeRepository, CompanyTypeRepository companyTypeRepository, PositionRepository positionRepository, LeaveRequestRepository leaveRequestRepository) {
         this.companyRepository = companyRepository;
         this.employeeRepository = employeeRepository;
         this.companyTypeRepository = companyTypeRepository;
         this.positionRepository = positionRepository;
+        this.leaveRequestRepository = leaveRequestRepository;
     }
 
     @Transactional
@@ -33,6 +34,7 @@ public class InitDbService {
         companyRepository.deleteAll();
         companyTypeRepository.deleteAll();
         positionRepository.deleteAll();
+        leaveRequestRepository.deleteAll();
     }
 
     @Transactional
@@ -61,5 +63,12 @@ public class InitDbService {
         Employee employee5 = new Employee("Tibor", "Tóth", administrator, 2500, LocalDateTime.now(), null);
 
         employeeRepository.saveAll(Arrays.asList(employee1, employee2, employee3, employee4, employee5));
+
+        LeaveRequest leaveRequest1 = new LeaveRequest(LocalDate.of(2023, 2,1), LocalDate.of(2023,2,10), LocalDateTime.now(), LeaveRequestStatus.PENDING, employee1, null, null);
+        LeaveRequest leaveRequest2 = new LeaveRequest(LocalDate.of(2023, 3,5), LocalDate.of(2023,5,10), LocalDateTime.now(), LeaveRequestStatus.PENDING, employee2, null, null);
+        LeaveRequest leaveRequest3 = new LeaveRequest(LocalDate.of(2023, 4,10), LocalDate.of(2023,5,15), LocalDateTime.now(), LeaveRequestStatus.PENDING, employee3, null, null);
+        LeaveRequest leaveRequest4 = new LeaveRequest(LocalDate.of(2023, 5,10), LocalDate.of(2023,5,15), LocalDateTime.now(), LeaveRequestStatus.PENDING, employee3, null, null);
+
+        leaveRequestRepository.saveAll(Arrays.asList(leaveRequest1, leaveRequest2, leaveRequest3, leaveRequest4));
     }
 }

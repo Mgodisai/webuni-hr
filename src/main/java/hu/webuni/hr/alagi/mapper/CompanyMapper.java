@@ -1,4 +1,4 @@
-package hu.webuni.hr.alagi.controller.rest;
+package hu.webuni.hr.alagi.mapper;
 
 import hu.webuni.hr.alagi.dto.CompanyDto;
 import hu.webuni.hr.alagi.dto.EmployeeDto;
