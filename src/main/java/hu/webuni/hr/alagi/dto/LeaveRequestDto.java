@@ -18,7 +18,6 @@ public class LeaveRequestDto {
 
    private LeaveRequestStatus leaveRequestStatus;
 
-   @NotNull
    private Long requesterId;
    private String requesterFullName;
 

@@ -1,15 +1,11 @@
 package hu.webuni.hr.alagi.repository;
 
 import hu.webuni.hr.alagi.model.Employee;
-import hu.webuni.hr.alagi.model.Position;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,4 +28,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
            "LEFT JOIN FETCH e.company "
    )
    List<Employee> findAllEmployeesWithCompany();
+
+   Optional<Employee> findByUsername(String username);
 }

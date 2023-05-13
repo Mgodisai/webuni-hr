@@ -6,15 +6,18 @@ import hu.webuni.hr.alagi.exception.DefaultErrorEntity;
 import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.model.LeaveRequest;
 import hu.webuni.hr.alagi.model.LeaveRequestStatus;
+import hu.webuni.hr.alagi.repository.EmployeeRepository;
 import hu.webuni.hr.alagi.service.EmployeeService;
 import hu.webuni.hr.alagi.service.LeaveRequestService;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,12 +25,15 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Transactional
+
 @AutoConfigureTestDatabase
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class LeaveRequestControllerIT {
 
    private static final String BASE_URI = "/api/leave-requests";
+
+   private static final String PASS = "pass";
+   private static final String TESTUSER = "testuser";
 
    @Autowired
    private WebTestClient webTestClient;
@@ -38,11 +44,30 @@ class LeaveRequestControllerIT {
    @Autowired
    private EmployeeService employeeService;
 
+   @Autowired
+   private EmployeeRepository employeeRepository;
+
+   @Autowired
+   PasswordEncoder passwordEncoder;
+
+   @BeforeEach
+   public void init() {
+      if(employeeRepository.findByUsername(TESTUSER).isEmpty()) {
+         Employee employee = new Employee();
+         employee.setUsername(TESTUSER);
+         employee.setFirstName(TESTUSER);
+         employee.setLastName(TESTUSER);
+         employee.setPassword(passwordEncoder.encode(PASS));
+         employeeRepository.save(employee);
+      }
+   }
+
    public List<LeaveRequestDto> getAllLeaveRequests() {
       return webTestClient
             .get()
             .uri(BASE_URI)
             .accept(MediaType.APPLICATION_JSON)
+            .headers(headers -> headers.setBasicAuth(TESTUSER, PASS))
             .exchange()
             .expectStatus().isOk()
             .expectBodyList(LeaveRequestDto.class)
@@ -64,6 +89,7 @@ class LeaveRequestControllerIT {
             .get()
             .uri(BASE_URI + "/{id}", invalidLeaveRequestId)
             .accept(MediaType.APPLICATION_JSON)
+            .headers(headers -> headers.setBasicAuth(TESTUSER, PASS))
             .exchange()
             .expectStatus().isBadRequest()
             .expectBody(DefaultErrorEntity.class)
@@ -81,6 +107,7 @@ class LeaveRequestControllerIT {
             .get()
             .uri(BASE_URI + "/{id}", validLeaveRequestId)
             .accept(MediaType.APPLICATION_JSON)
+            .headers(headers -> headers.setBasicAuth(TESTUSER, PASS))
             .exchange()
             .expectStatus().isOk()
             .expectBody(LeaveRequestDto.class)
@@ -119,6 +146,7 @@ class LeaveRequestControllerIT {
             .post()
             .uri(BASE_URI + "/search")
             .accept(MediaType.APPLICATION_JSON)
+            .headers(headers -> headers.setBasicAuth(TESTUSER, PASS))
             .bodyValue(example)
             .exchange()
             .expectStatus().isOk()
@@ -154,23 +182,35 @@ class LeaveRequestControllerIT {
             .post()
             .uri(BASE_URI)
             .contentType(MediaType.APPLICATION_JSON)
+            .headers(headers -> headers.setBasicAuth(TESTUSER, PASS))
+            .bodyValue(newLeaveRequest)
+            .exchange()
+            .expectStatus().isForbidden();
+
+      webTestClient
+            .post()
+            .uri(BASE_URI)
+            .contentType(MediaType.APPLICATION_JSON)
+            .headers(headers -> headers.setBasicAuth("emp1", "pass1"))
             .bodyValue(newLeaveRequest)
             .exchange()
             .expectStatus().isOk()
             .expectBody(LeaveRequestDto.class);
+
    }
 
    @Test
    void testHandleLeaveRequest() {
-     handleRequest(1L, 2L, true);
-      handleRequest(2L, 3L, false);
+     handleRequest(2L, 1L, true, "emp1", "pass1");
+      handleRequest(3L, 2L, false, "emp2", "pass2");
    }
 
-   void handleRequest(Long leaveRequestId, Long approverId, boolean approved) {
+   void handleRequest(Long leaveRequestId, Long approverId, boolean approved, String username, String password ) {
       LeaveRequestDto response = webTestClient
             .put()
-            .uri(BASE_URI + "/{id}/approval?approverId={approverId}&approved={approved}", leaveRequestId, approverId, approved)
+            .uri(BASE_URI + "/{id}/approval?approved={approved}", leaveRequestId, approved)
             .accept(MediaType.APPLICATION_JSON)
+            .headers(headers -> headers.setBasicAuth(username, password))
             .exchange()
             .expectStatus().isOk()
             .expectBody(LeaveRequestDto.class)
@@ -189,13 +229,13 @@ class LeaveRequestControllerIT {
    @Test
    void testHandleLeaveRequestInvalidRequestId() {
       Long leaveRequestId = -1L;
-      Long approverId = 2L;
       boolean approved = true;
 
       DefaultErrorEntity response = webTestClient
             .put()
-            .uri(BASE_URI + "/{id}/approval?approverId={approverId}&approved={approved}", leaveRequestId, approverId, approved)
+            .uri(BASE_URI + "/{id}/approval?approved={approved}", leaveRequestId, approved)
             .accept(MediaType.APPLICATION_JSON)
+            .headers(headers -> headers.setBasicAuth(TESTUSER, PASS))
             .exchange()
             .expectStatus().isBadRequest().expectBody(DefaultErrorEntity.class)
             .returnResult().getResponseBody();
@@ -209,8 +249,8 @@ class LeaveRequestControllerIT {
       LocalDate newStartDate = LocalDate.of(2023,10,10);
       LocalDate newEndDate = LocalDate.of(2023,10,15);
       LeaveRequestDto updatedLeaveRequest = new LeaveRequestDto();
-      updatedLeaveRequest.setId(4L);
-      updatedLeaveRequest.setRequesterId(2L);
+      updatedLeaveRequest.setId(leaveRequestId);
+      updatedLeaveRequest.setRequesterId(3L);
       updatedLeaveRequest.setStartDate(newStartDate);
       updatedLeaveRequest.setEndDate(newEndDate);
 
@@ -218,6 +258,7 @@ class LeaveRequestControllerIT {
             .put()
             .uri(BASE_URI + "/{id}", leaveRequestId)
             .contentType(MediaType.APPLICATION_JSON)
+            .headers(headers -> headers.setBasicAuth("emp2", "pass2"))
             .bodyValue(updatedLeaveRequest)
             .exchange()
             .expectStatus().isOk()
@@ -255,9 +296,10 @@ class LeaveRequestControllerIT {
             .put()
             .uri(BASE_URI + "/{id}", leaveRequestId)
             .contentType(MediaType.APPLICATION_JSON)
+            .headers(headers -> headers.setBasicAuth(TESTUSER, PASS))
             .bodyValue(updatedLeaveRequestWithInvalidId)
             .exchange()
-            .expectStatus().isNotFound();
+            .expectStatus().isForbidden();
    }
 
    @Test
@@ -268,6 +310,7 @@ class LeaveRequestControllerIT {
             .delete()
             .uri(BASE_URI + "/{id}", leaveRequestId)
             .accept(MediaType.APPLICATION_JSON)
+            .headers(headers -> headers.setBasicAuth("emp2", "pass2"))
             .exchange()
             .expectStatus().isOk();
    }
@@ -280,6 +323,7 @@ class LeaveRequestControllerIT {
             .delete()
             .uri(BASE_URI + "/{id}", leaveRequestId)
             .accept(MediaType.APPLICATION_JSON)
+            .headers(headers -> headers.setBasicAuth(TESTUSER, PASS))
             .exchange()
             .expectStatus().isNotFound();
    }

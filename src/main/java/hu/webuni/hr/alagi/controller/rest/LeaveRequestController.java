@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -23,6 +24,14 @@ public class LeaveRequestController {
    private LeaveRequestService leaveRequestService;
    @Autowired
    private LeaveRequestMapper leaveRequestMapper;
+
+   @GetMapping("/manager/{managerId}")
+   @PreAuthorize("authentication.principal.employee.id == #managerId")
+   public List<LeaveRequestDto> getLeaveRequestsForManager(@PathVariable Long managerId, Pageable pageable) {
+      Page<LeaveRequest> leaveRequestsByManager = leaveRequestService.getLeaveRequestsForManager(managerId, pageable);
+      return leaveRequestMapper.requestsToDtos(leaveRequestsByManager.toList());
+   }
+
 
    @GetMapping
    public List<LeaveRequestDto> getAllLeaveRequests(Pageable pageable) {
@@ -45,6 +54,7 @@ public class LeaveRequestController {
    }
 
    @PostMapping
+   //@PreAuthorize("#leaveRequestDto.requesterId == authentication.principal.employee.id")
    public LeaveRequestDto createLeaveRequest(@RequestBody @Valid LeaveRequestDto leaveRequestDto) {
       LeaveRequest createdLeaveRequest;
       try {
@@ -55,20 +65,8 @@ public class LeaveRequestController {
       return leaveRequestMapper.requestToDto(createdLeaveRequest);
    }
 
-   @PutMapping("/{id}/approval")
-   public LeaveRequestDto handleLeaveRequest(@PathVariable Long id, @RequestParam Long approverId, @RequestParam boolean approved) {
-
-      LeaveRequest handledLeaveRequest;
-      try {
-         handledLeaveRequest = leaveRequestService.handleLeaveRequest(id, approverId, approved)
-               .orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "LeaveRequest is already handled"));
-      } catch (IllegalArgumentException e) {
-         throw new EntityNotExistsWithGivenIdException(id, LeaveRequest.class);
-      }
-      return leaveRequestMapper.requestToDto(handledLeaveRequest);
-   }
-
    @PutMapping("/{id}")
+   @PreAuthorize("#leaveRequestDto.requesterId == authentication.principal.employee.id")
    public LeaveRequestDto updateLeaveRequest(@PathVariable Long id, @RequestBody LeaveRequestDto leaveRequestDto) {
       leaveRequestDto.setId(id);
       LeaveRequest updatedLeaveRequest;
@@ -81,6 +79,19 @@ public class LeaveRequestController {
          throw new ResponseStatusException(HttpStatus.NOT_FOUND);
       }
       return leaveRequestMapper.requestToDto(updatedLeaveRequest);
+   }
+
+   @PutMapping("/{id}/approval")
+   public LeaveRequestDto handleLeaveRequest(@PathVariable Long id, @RequestParam boolean approved) {
+
+      LeaveRequest handledLeaveRequest;
+      try {
+         handledLeaveRequest = leaveRequestService.handleLeaveRequest(id, approved)
+               .orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "LeaveRequest is already handled"));
+      } catch (IllegalArgumentException e) {
+         throw new EntityNotExistsWithGivenIdException(id, LeaveRequest.class);
+      }
+      return leaveRequestMapper.requestToDto(handledLeaveRequest);
    }
 
    @DeleteMapping("/{id}")

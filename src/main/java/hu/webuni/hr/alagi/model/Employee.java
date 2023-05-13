@@ -26,12 +26,16 @@ public class Employee {
    private LocalDateTime startDate;
 
    @ManyToOne(fetch=FetchType.EAGER, cascade = CascadeType.ALL)
-   @JoinColumn(name="position_id")
    private Position position;
 
    @ManyToOne(fetch=FetchType.LAZY, cascade = CascadeType.ALL)
-   @JoinColumn(name="company_id")
    private Company company;
+
+   private String username;
+   private String password;
+
+   @ManyToOne(fetch=FetchType.LAZY)
+   private Employee manager;
 
    public Employee(Long id, String firstName, String lastName, Position position, Integer monthlySalary, LocalDateTime startDate, Company company) {
       this.id = id;
@@ -113,6 +117,30 @@ public class Employee {
 
    public void setCompany(Company company) {
       this.company = company;
+   }
+
+   public String getUsername() {
+      return username;
+   }
+
+   public void setUsername(String username) {
+      this.username = username;
+   }
+
+   public String getPassword() {
+      return password;
+   }
+
+   public void setPassword(String password) {
+      this.password = password;
+   }
+
+   public Employee getManager() {
+      return manager;
+   }
+
+   public void setManager(Employee manager) {
+      this.manager = manager;
    }
 
    @Override

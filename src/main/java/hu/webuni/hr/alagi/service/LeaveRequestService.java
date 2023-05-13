@@ -5,10 +5,13 @@ import hu.webuni.hr.alagi.model.Employee;
 import hu.webuni.hr.alagi.model.LeaveRequest;
 import hu.webuni.hr.alagi.model.LeaveRequestStatus;
 import hu.webuni.hr.alagi.repository.LeaveRequestRepository;
+import hu.webuni.hr.alagi.security.HrUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -31,9 +34,25 @@ public class LeaveRequestService {
       leaveRequest.setLeaveRequestStatus(LeaveRequestStatus.PENDING);
       leaveRequest.setApprover(null);
       leaveRequest.setApproveDate(null);
-      Employee employee = employeeService.getEmployeeById(requesterId)
-            .orElseThrow(()->new IllegalArgumentException("Requester not found with EmployeeId: "+requesterId));
-      leaveRequest.setRequester(employee);
+      Employee currentUser = getCurrentUser().getEmployee();
+
+      Employee requesterEmployee;
+      if (requesterId!=null) {
+          requesterEmployee = employeeService.getEmployeeById(requesterId)
+               .orElse(currentUser);
+      } else {
+         requesterEmployee=currentUser;
+      }
+
+      Employee manager = requesterEmployee.getManager();
+
+      if (currentUser.getId().equals(requesterEmployee.getId())
+            || (manager!=null
+            && currentUser.getId().equals(manager.getId()))) {
+         leaveRequest.setRequester(requesterEmployee);
+      } else {
+         throw new AccessDeniedException("Only the employee or their manager can create a leave request");
+      }
       return leaveRequestRepository.save(leaveRequest);
    }
 
@@ -99,17 +118,22 @@ public class LeaveRequestService {
    }
 
    @Transactional
-   public Optional<LeaveRequest> handleLeaveRequest(Long id, Long approverId, boolean isApproved) {
-      Employee approver = employeeService.getEmployeeById(approverId)
-            .orElseThrow(()->new IllegalArgumentException("Approver not found with EmployeeId: "+approverId));
+   public Optional<LeaveRequest> handleLeaveRequest(Long id, boolean isApproved) {
+      Employee currentUser = getCurrentUser().getEmployee();
+
       LeaveRequest leaveRequest = findById(id)
             .orElseThrow(()->new IllegalArgumentException("LeaveRequest not found with Id: "+id));
 
+      Employee requesterEmployee = leaveRequest.getRequester();
+
+      if(requesterEmployee.getManager() == null || !requesterEmployee.getManager().getId().equals(currentUser.getId()))
+         throw new AccessDeniedException("Only manager of employee can approve a request");
+
       if (leaveRequest.getLeaveRequestStatus() == LeaveRequestStatus.PENDING) {
          leaveRequest.setLeaveRequestStatus(isApproved?LeaveRequestStatus.APPROVED:LeaveRequestStatus.REJECTED);
-         leaveRequest.setApprover(approver);
+         leaveRequest.setApprover(currentUser);
          leaveRequest.setApproveDate(LocalDateTime.now());
-         leaveRequest = leaveRequestRepository.save(leaveRequest);
+         //leaveRequest = leaveRequestRepository.save(leaveRequest);
          return Optional.of(leaveRequest);
       } else {
          return Optional.empty();
@@ -125,6 +149,31 @@ public class LeaveRequestService {
       if (leaveRequest.getLeaveRequestStatus() != LeaveRequestStatus.PENDING)
          throw new IllegalStateException("LeaveRequest is already handled, cannot be deleted");
 
-      leaveRequestRepository.deleteById(id);
+      Long currentUserId = getCurrentUser().getEmployee().getId();
+      Long ownerId = leaveRequest.getRequester().getId();
+      //Manager is also allowed to delete requests
+      Employee manager = leaveRequest.getRequester().getManager();
+      Long managerId=null;
+      if (manager!=null) {
+         managerId = manager.getId();
+      }
+      if (ownerId.equals(currentUserId)
+      || (managerId!=null&&managerId.equals(currentUserId))) {
+         leaveRequestRepository.deleteById(id);
+      } else {
+         throw new AccessDeniedException("Only the owner or their manager can delete a leave request.");
+      }
+   }
+
+   public Page<LeaveRequest> getLeaveRequestsForManager(Long managerId, Pageable pageable) {
+      Employee manager = employeeService.getEmployeeById(managerId).orElse(null);
+      if (manager == null) {
+         throw new IllegalArgumentException("Invalid manager ID");
+      }
+      return leaveRequestRepository.findAllByRequesterManagerId(managerId, pageable);
+   }
+
+   private HrUser getCurrentUser() {
+      return (HrUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
    }
 }

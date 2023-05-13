@@ -25,4 +25,6 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
          "LEFT JOIN FETCH lr.approver a "+
          "WHERE lr.id = :leaveRequestId")
    Optional<LeaveRequest> findLeaveRequestByIdWithEmployees(Long leaveRequestId);
+
+   Page<LeaveRequest> findAllByRequesterManagerId(Long managerId, Pageable pageable);
 }

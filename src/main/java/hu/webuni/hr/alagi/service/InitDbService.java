@@ -3,6 +3,7 @@ package hu.webuni.hr.alagi.service;
 import hu.webuni.hr.alagi.model.*;
 import hu.webuni.hr.alagi.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
@@ -16,16 +17,18 @@ public class InitDbService {
     private final EmployeeRepository employeeRepository;
     private final CompanyTypeRepository companyTypeRepository;
     private final PositionRepository positionRepository;
-
     private final LeaveRequestRepository leaveRequestRepository;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Autowired
-    public InitDbService(CompanyRepository companyRepository, EmployeeRepository employeeRepository, CompanyTypeRepository companyTypeRepository, PositionRepository positionRepository, LeaveRequestRepository leaveRequestRepository) {
+    public InitDbService(CompanyRepository companyRepository, EmployeeRepository employeeRepository, CompanyTypeRepository companyTypeRepository, PositionRepository positionRepository, LeaveRequestRepository leaveRequestRepository, PasswordEncoder passwordEncoder) {
         this.companyRepository = companyRepository;
         this.employeeRepository = employeeRepository;
         this.companyTypeRepository = companyTypeRepository;
         this.positionRepository = positionRepository;
         this.leaveRequestRepository = leaveRequestRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -57,11 +60,24 @@ public class InitDbService {
         companyRepository.saveAll(Arrays.asList(companyA, companyB));
 
         Employee employee1 = new Employee("Gyula", "Kis", tester, 4000, LocalDateTime.now(), companyA);
+        employee1.setUsername("emp1");
+        employee1.setPassword(passwordEncoder.encode("pass1"));
         Employee employee2 = new Employee( "Géza", "Nagy", softwareDesigner, 6000, LocalDateTime.now(), companyA);
+        employee2.setUsername("emp2");
+        employee2.setPassword(passwordEncoder.encode("pass2"));
+        employee2.setManager(employee1);
         Employee employee3 = new Employee( "Pál", "Kovács", developer, 4500, LocalDateTime.now(), companyA);
+        employee3.setUsername("emp3");
+        employee3.setPassword(passwordEncoder.encode("pass3"));
+        employee3.setManager(employee2);
         Employee employee4 = new Employee("Mária", "Tóth", ceo, 15500, LocalDateTime.now(), companyB);
+        employee4.setUsername("emp4");
+        employee4.setPassword(passwordEncoder.encode("pass4"));
+        employee4.setManager(employee1);
         Employee employee5 = new Employee("Tibor", "Tóth", administrator, 2500, LocalDateTime.now(), null);
-
+        employee5.setUsername("emp5");
+        employee5.setPassword(passwordEncoder.encode("pass5"));
+        employee5.setManager(employee2);
         employeeRepository.saveAll(Arrays.asList(employee1, employee2, employee3, employee4, employee5));
 
         LeaveRequest leaveRequest1 = new LeaveRequest(LocalDate.of(2023, 2,1), LocalDate.of(2023,2,10), LocalDateTime.now(), LeaveRequestStatus.PENDING, employee1, null, null);
